@@ -8,6 +8,7 @@ if (!is_file(DATA_QUERY_PATH)) {
     die('Not a file');
 }
 
+fileMTimeMod(DATA_QUERY_PATH, $_SERVER);
 
 $zipFile = new \PhpZip\ZipFile();
 $zipFile->openFile(DATA_QUERY_PATH);
@@ -33,9 +34,7 @@ if ($zipFile->hasEntry('ComicInfo.xml')) {
     }
 }
 
-$fileList = array_filter($zipFile->getListFiles(), function ($v) {
-    return preg_match('/^[a-z0-9\-_]+\.(jpg|jpeg|png|gif|tiff|webp)$/i', $v);
-});
+$fileList = array_filter($zipFile->getListFiles(), 'filterImageFiles');
 $fileCnt = count($fileList);
 
 $transcriptionAvailable = $zipFile->hasEntry('transcript.txt');

@@ -8,32 +8,12 @@ if (!is_file(DATA_QUERY_PATH)) {
     die('Not a file');
 }
 
+fileMTimeMod(DATA_QUERY_PATH, $_SERVER);
 
 $zipFile = new \PhpZip\ZipFile();
 $zipFile->openFile(DATA_QUERY_PATH);
 
-$fileList = array_filter($zipFile->getListFiles(), function ($v) {
-    return preg_match('/^[a-z0-9\-_]+\.(jpg|jpeg|png|gif|tiff|webp)$/i', $v);
-});
-
-function getMimeFromExt(string $filename): string
-{
-    switch (strtolower(pathinfo($filename, PATHINFO_EXTENSION))) {
-        case 'jpg':
-        case 'jpeg':
-            return 'image/jpeg';
-        case 'png':
-            return 'image/png';
-        case 'gif':
-            return 'image/gif';
-        case 'tiff':
-            return 'image/tiff';
-        case 'webp':
-            return 'image/webp';
-        default:
-            return 'application/octet-stream';
-    }
-}
+$fileList = array_filter($zipFile->getListFiles(), 'filterImageFiles');
 
 if ($page > count($fileList)) {
     die('No data');
