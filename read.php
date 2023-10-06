@@ -108,9 +108,6 @@ if ($transcriptionAvailable) {
         footer {
             height: 30px;
             font-size: 18px;
-        }
-
-        footer {
             display: flex;
             margin: 0 15px;
             justify-content: space-between;
@@ -151,7 +148,14 @@ if ($transcriptionAvailable) {
 </head>
 
 <body>
-    <header><?= htmlentities($comic_title) ?></header>
+    <header>
+        <div>
+            <a href="list.php?path=<?= urlencode(dirname($path)) ?>">Back</a>
+        </div>
+        <div>
+            <?= htmlentities($comic_title) ?>
+        </div>
+    </header>
     <div class="page-container">
         <div class="page-img-list-container">
             <?php for ($p = 1; $p <= $fileCnt; $p++) : ?>
