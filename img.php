@@ -13,7 +13,7 @@ $zipFile = new \PhpZip\ZipFile();
 $zipFile->openFile(DATA_QUERY_PATH);
 
 $fileList = array_filter($zipFile->getListFiles(), function ($v) {
-    return preg_match('/^[a-z0-9\-_]+\.(jpg|jpeg|png|gif|tiff)$/i', $v);
+    return preg_match('/^[a-z0-9\-_]+\.(jpg|jpeg|png|gif|tiff|webp)$/i', $v);
 });
 
 function getMimeFromExt(string $filename): string
@@ -28,6 +28,8 @@ function getMimeFromExt(string $filename): string
             return 'image/gif';
         case 'tiff':
             return 'image/tiff';
+        case 'webp':
+            return 'image/webp';
         default:
             return 'application/octet-stream';
     }

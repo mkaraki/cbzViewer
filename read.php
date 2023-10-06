@@ -34,7 +34,7 @@ if ($zipFile->hasEntry('ComicInfo.xml')) {
 }
 
 $fileList = array_filter($zipFile->getListFiles(), function ($v) {
-    return preg_match('/^[a-z0-9\-_]+\.(jpg|jpeg|png|gif|tiff)$/i', $v);
+    return preg_match('/^[a-z0-9\-_]+\.(jpg|jpeg|png|gif|tiff|webp)$/i', $v);
 });
 $fileCnt = count($fileList);
 
