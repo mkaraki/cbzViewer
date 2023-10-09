@@ -3,6 +3,16 @@ require_once __DIR__ . '/_shared.php';
 if (!is_dir(DATA_QUERY_PATH)) {
     die('Not a directory');
 }
+
+$files = [];
+foreach (new DirectoryIterator(DATA_QUERY_PATH) as $f) {
+    $files[$f->getFilename()] = [
+        'pathName' => $f->getPathname(),
+        'isDir' => $f->isDir(),
+        'fileName' => $f->getFilename(),
+    ];
+}
+ksort($files, SORT_NUMERIC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -28,14 +38,14 @@ if (!is_dir(DATA_QUERY_PATH)) {
                 </a>
             </li>
         <?php endif; ?>
-        <?php foreach (new DirectoryIterator(DATA_QUERY_PATH) as $file) : ?>
+        <?php foreach ($files as $file) : ?>
             <?php
-            $relPath = str_replace('\\', '/', substr($file->getPathname(), strlen(DATA_ROOT_ABSOLUTE)));
-            $fileName = $file->getFilename();
+            $relPath = str_replace('\\', '/', substr($file['pathName'], strlen(DATA_ROOT_ABSOLUTE)));
+            $fileName = $file['fileName'];
             if ($fileName === '.' || $fileName === '..') continue;
             ?>
             <li>
-                <?php if ($file->isDir()) : ?>
+                <?php if ($file['isDir']) : ?>
                     📂
                     <a href="list.php?path=<?= urlencode($relPath) ?>">
                         <?= $fileName ?>/
