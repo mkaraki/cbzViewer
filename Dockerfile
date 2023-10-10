@@ -8,6 +8,15 @@ RUN composer install
 
 FROM php:8.2-apache
 
+RUN apt-get update && \
+    apt-get install -y libmagickwand-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    pecl install imagick && \
+    docker-php-ext-enable imagick
+
+RUN sed -i 's/<policy domain="coder" rights="none" pattern="PDF" \/>/<policy domain="coder" rights="read|write" pattern="PDF" \/>/' /etc/ImageMagick-6/policy.xml
+
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 COPY --from=installdep /app /var/www/html

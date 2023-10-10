@@ -10,42 +10,78 @@ if (!is_file(DATA_QUERY_PATH)) {
 
 fileMTimeMod(DATA_QUERY_PATH, $_SERVER);
 
-$zipFile = new \PhpZip\ZipFile();
-$zipFile->openFile(DATA_QUERY_PATH);
+$small_query_path = strtolower(DATA_QUERY_PATH);
 
 $comic_title = pathinfo(DATA_QUERY_PATH, PATHINFO_FILENAME);
+$pageCnt = 0;
+$transcriptionAvailable = false;
+$transcript = '';
 
-if ($zipFile->hasEntry('ComicInfo.xml')) {
-    $comicInfoXmlRaw = $zipFile->getEntryContents('ComicInfo.xml');
-    $parser = xml_parser_create();
-    $comicInfoXml = null;
-    $comicInfoXmlIndex = null;
-    xml_parse_into_struct($parser, $comicInfoXmlRaw, $comicInfoXml, $comicInfoXmlIndex);
+if (str_ends_with($small_query_path, '.cbz')) {
+    $zipFile = new \PhpZip\ZipFile();
+    $zipFile->openFile(DATA_QUERY_PATH);
 
-    foreach ($comicInfoXml as $comicInfoXmlEntry) {
-        switch ($comicInfoXmlEntry['tag']) {
-            case 'TITLE':
-                $comic_title = $comicInfoXmlEntry['value'];
-                break;
+    if ($zipFile->hasEntry('ComicInfo.xml')) {
+        $comicInfoXmlRaw = $zipFile->getEntryContents('ComicInfo.xml');
+        $parser = xml_parser_create();
+        $comicInfoXml = null;
+        $comicInfoXmlIndex = null;
+        xml_parse_into_struct($parser, $comicInfoXmlRaw, $comicInfoXml, $comicInfoXmlIndex);
 
-            default:
-                break;
+        foreach ($comicInfoXml as $comicInfoXmlEntry) {
+            switch ($comicInfoXmlEntry['tag']) {
+                case 'TITLE':
+                    $comic_title = $comicInfoXmlEntry['value'];
+                    break;
+
+                default:
+                    break;
+            }
         }
     }
+
+    $fileList = array_filter($zipFile->getListFiles(), 'filterImageFiles');
+    $pageCnt = count($fileList);
+
+    $transcriptionAvailable = $zipFile->hasEntry('transcript.txt');
+    if ($transcriptionAvailable) {
+        $transcript = $zipFile->getEntryContents('transcript.txt');
+        $transcript = str_replace("\r\n", "\n", $transcript);
+        $transcript = str_replace("\n---\n", "<hr />", $transcript);
+        $transcript = str_replace("\n", "<br />", $transcript);
+        $transcript = htmlentities($transcript);
+    }
+
+    $zipFile->close();
+} else if (str_ends_with($small_query_path, '.pdf')) {
+    if (filesize(DATA_QUERY_PATH) < 5_000_000) {
+        function getPdfPages($path)
+        {
+            $pdf_str = file_get_contents($path);
+            if (preg_match_all("/\/Count\s+(\d+)/", $pdf_str, $matches))
+                return max($matches[1]);
+            if (preg_match_all("/\/Page\W*(\d+)/", $pdf_str, $matches))
+                return max($matches[1]);
+            if (preg_match_all("/\/N\s+(\d+)/", $pdf_str, $matches))
+                return max($matches[1]);
+
+            return 0;
+        }
+
+        $pageCnt = getPdfPages(DATA_QUERY_PATH);
+    }
+
+    if ($pageCnt === 0) {
+        $comic_pdf = new imagick();
+        $comic_pdf->pingImage(DATA_QUERY_PATH);
+        $pageCnt = $comic_pdf->getNumberImages();
+    }
+} else {
+    http_response_code(400);
+    die('Not a comic');
 }
 
-$fileList = array_filter($zipFile->getListFiles(), 'filterImageFiles');
-$fileCnt = count($fileList);
 
-$transcriptionAvailable = $zipFile->hasEntry('transcript.txt');
-$transcript = '';
-if ($transcriptionAvailable) {
-    $transcript = $zipFile->getEntryContents('transcript.txt');
-    $transcript = str_replace("\r\n", "\n", $transcript);
-    $transcript = str_replace("\n---\n", "<hr />", $transcript);
-    $transcript = str_replace("\n", "<br />", $transcript);
-    $transcript = htmlentities($transcript);
-}
 
 ?>
 <!DOCTYPE html>
@@ -158,7 +194,7 @@ if ($transcriptionAvailable) {
     </header>
     <div class="page-container">
         <div class="page-img-list-container">
-            <?php for ($p = 1; $p <= $fileCnt; $p++) : ?>
+            <?php for ($p = 1; $p <= $pageCnt; $p++) : ?>
                 <div class="page-img-container" id="<?= $p ?>">
                     <img class="page" src="img.php?path=<?= urlencode($path) ?>&p=<?= $p ?>" alt="Page <?= $p ?>" loading="lazy" />
                 </div>
@@ -179,7 +215,7 @@ if ($transcriptionAvailable) {
             <?php endif; ?>
         </div>
         <div>
-            <span id="pgNum">1</span> / <?= $fileCnt ?>
+            <span id="pgNum">1</span> / <?= $pageCnt ?>
         </div>
         <div>
             <a href="javascript:void(0)" onclick="chPageInc(0)">Next</a>
@@ -227,7 +263,7 @@ if ($transcriptionAvailable) {
                 return;
             }
             const page = parseInt(pageUrl);
-            if (page >= <?= $fileCnt ?>)
+            if (page >= <?= $pageCnt ?>)
                 return;
             window.location.hash = '#' + (page + 1);
             pgNum.innerText = page + 1;
@@ -236,6 +272,3 @@ if ($transcriptionAvailable) {
 </body>
 
 </html>
-<?php
-$zipFile->close();
-?>
