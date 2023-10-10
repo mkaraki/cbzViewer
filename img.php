@@ -17,6 +17,7 @@ if (str_ends_with($small_query_path, '.cbz')) {
     $zipFile->openFile(DATA_QUERY_PATH);
 
     $fileList = array_filter($zipFile->getListFiles(), 'filterImageFiles');
+    sort($fileList, SORT_NUMERIC);
 
     if ($page > count($fileList)) {
         die('No data');
