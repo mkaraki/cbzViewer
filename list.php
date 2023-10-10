@@ -12,7 +12,7 @@ foreach (new DirectoryIterator(DATA_QUERY_PATH) as $f) {
         'fileName' => $f->getFilename(),
     ];
 }
-ksort($files, SORT_NUMERIC);
+ksort($files);
 ?>
 <!DOCTYPE html>
 <html lang="en">
