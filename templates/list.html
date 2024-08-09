@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ls</title>
+    <style>
+        ul {
+            list-style: none;
+            padding-left: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<h1>Index of {{ .CurrentDir }}</h1>
+
+<ul>
+    {{ if .HasParent }}
+    <li><a href="list?path={{ .ParentDir }}">../</a></li>
+    {{ end }}
+    {{ range .Items }}
+    <li>
+        {{ if .IsDir }}
+            📂
+            <a href="list?path={{ .Path }}">
+                {{ .Name }}/
+            </a>
+        {{ else }}
+            📄
+            <a href="read?path={{ .Path }}">
+                {{ .Name }}
+            </a>
+        {{ end }}
+    </li>
+    {{ end }}
+</ul>
+
+<hr />
+<a href="legal">Legal info</a>
+</body>
+
+</html>

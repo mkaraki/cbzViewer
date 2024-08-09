@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .ComicTitle }} - Reader</title>
+    <link rel="stylesheet" href="assets/read.css">
+</head>
+
+<body>
+<header>
+    <div>
+        <a href="list?path={{ .ParentDir }}">Back</a>
+    </div>
+    <div>
+        {{ .ComicTitle }}
+    </div>
+</header>
+<div class="page-container">
+    <div class="page-img-list-container">
+        {{ range .Pages }}
+        <div class="page-img-container" id="{{ .PageNo }}">
+            <img class="page" src="img?path={{ $.Path }}&f={{ .ImageFile }}" alt="Page {{ .PageNo }}" loading="lazy" />
+        </div>
+        {{ end }}
+    </div>
+    <a class="prev-controller" href="javascript:void(0)" onclick="chPageDec(0)"></a>
+    <a class="next-controller" href="javascript:void(0)" onclick="chPageInc(0)"></a>
+</div>
+<footer>
+    <div>
+        <a href="javascript:void(0)" onclick="chPageDec(0)">Prev</a>
+    </div>
+    <div>
+        <span id="pgNum">1</span> / {{ .PageCnt }}
+    </div>
+    <div>
+        <a href="javascript:void(0)" onclick="chPageInc(0)">Next</a>
+    </div>
+</footer>
+<script>
+    const pageCnt = {{ .PageCnt }};
+</script>
+<script src="assets/read.js"></script>
+</body>
+
+</html>
