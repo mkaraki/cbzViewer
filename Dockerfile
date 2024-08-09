@@ -1,29 +1,32 @@
-FROM composer AS installdep
+FROM rust:1-bookworm AS lepton_jpeg_build
 
-COPY composer.json /app/
+RUN apt-get update && apt-get install -y git
 
-COPY --from=composer /usr/bin/composer /usr/bin/composer
+WORKDIR /
+RUN git clone --depth 1 https://github.com/microsoft/lepton_jpeg_rust.git
+WORKDIR lepton_jpeg_rust
 
-RUN composer install
+RUN cargo build --release
 
-FROM php:8.2-apache
+FROM golang:1.22-bookworm AS build
 
-RUN apt-get update && \
-    apt-get install -y libmagickwand-dev && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    pecl install imagick && \
-    docker-php-ext-enable imagick
+WORKDIR /app
+COPY --from=lepton_jpeg_build /lepton_jpeg_rust/target/release/liblepton_jpeg.so /app/
+COPY . /app/
 
-RUN sed -i 's/<policy domain="coder" rights="none" pattern="PDF" \/>/<policy domain="coder" rights="read|write" pattern="PDF" \/>/' /etc/ImageMagick-6/policy.xml
+RUN go build -ldflags "-linkmode external -extldflags '-L .'"
 
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+FROM debian:bookworm
 
-COPY --from=installdep /app /var/www/html
+COPY --from=lepton_jpeg_build /lepton_jpeg_rust/target/release/liblepton_jpeg.so /usr/lib/
+RUN ldconfig
 
-COPY _config.docker.php /var/www/html/_config.php
+WORKDIR /app
+COPY templates /app/templates
+COPY config.docker.json /app/config.json
+COPY --from=build /app/cbzViewer /app/
 
-COPY _shared.php /var/www/html/_shared.php
-COPY img.php /var/www/html/img.php
-COPY list.php /var/www/html/list.php
-COPY read.php /var/www/html/read.php
+VOLUME /books
+EXPOSE 8080
+
+ENTRYPOINT ["/app/cbzViewer"]
