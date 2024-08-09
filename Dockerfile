@@ -14,7 +14,7 @@ WORKDIR /app
 COPY --from=lepton_jpeg_build /lepton_jpeg_rust/target/release/liblepton_jpeg.so /app/
 COPY . /app/
 
-RUN go build -ldflags "-linkmode external -extldflags '-L .'"
+RUN go build -ldflags '-linkmode external -extldflags=-L=.'
 
 FROM debian:bookworm
 
