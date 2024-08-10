@@ -77,6 +77,11 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for _, e := range entries {
+		ext := getExtensionFromFilePath(e.Name())
+		if !e.IsDir() && !isSupportedComic(ext) {
+			continue
+		}
+
 		listData.Items = append(listData.Items, ListItem{
 			IsDir: e.IsDir(),
 			Name:  e.Name(),
