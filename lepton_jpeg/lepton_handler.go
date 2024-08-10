@@ -1,4 +1,4 @@
-package main
+package lepton_jpeg
 
 // #cgo LDFLAGS: -llepton_jpeg
 // #include "lepton_jpeg.h"
@@ -10,7 +10,7 @@ import (
 	"unsafe"
 )
 
-func decodeLepton(writer io.Writer, reader io.Reader) error {
+func DecodeLepton(writer io.Writer, reader io.Reader) error {
 	// Using io.Copy method because using reader.Read([]byte) didn't copy anything. (Return 0 bytes)
 	inputData := &bytes.Buffer{}
 	size, err := io.Copy(inputData, reader)

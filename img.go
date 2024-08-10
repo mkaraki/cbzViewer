@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"github.com/mkaraki/cbzViewer/lepton_jpeg"
 	"gopkg.in/gographics/imagick.v2/imagick"
 	"io"
 	"log"
@@ -74,7 +75,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		fileCacheSend(checkAbsPath, w)
 
 		if requestExtension == "lep" {
-			err = decodeLepton(w, imgData)
+			err = lepton_jpeg.DecodeLepton(w, imgData)
 		} else {
 			_, err = io.Copy(w, imgData)
 		}
