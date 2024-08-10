@@ -66,3 +66,57 @@ func getParentDir(realPath string) (bool, string, error) {
 
 	return false, "", nil
 }
+
+func getExtensionFromFilePath(queryFile string) string {
+	requestExtensionAry := strings.Split(queryFile, ".")
+	return strings.ToLower(requestExtensionAry[len(requestExtensionAry)-1])
+}
+
+func isSupportedImage(requestExtension string) bool {
+	switch requestExtension {
+	case "png":
+		return true
+	case "lep":
+		return true
+	case "jpg", "jpeg":
+		return true
+	case "gif":
+		return true
+	case "avif":
+		return true
+	case "webp":
+		return true
+	default:
+		return false
+	}
+}
+
+func isSupportedComic(requestExtension string) bool {
+	switch requestExtension {
+	case "cbz":
+		return true
+	default:
+		return false
+	}
+}
+
+func getContentTypeFromExtension(requestExtension string) string {
+	var contentType string
+
+	switch requestExtension {
+	case "png":
+		contentType = "image/png"
+	case "lep":
+		contentType = "image/jpeg"
+	case "jpg", "jpeg":
+		contentType = "image/jpeg"
+	case "gif":
+		contentType = "image/gif"
+	case "avif":
+		contentType = "image/avif"
+	case "webp":
+		contentType = "image/webp"
+	}
+
+	return contentType
+}

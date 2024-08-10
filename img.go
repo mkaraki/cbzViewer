@@ -30,20 +30,13 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestExtensionAry := strings.Split(queryFile, ".")
-	requestExtension := strings.ToLower(requestExtensionAry[len(requestExtensionAry)-1])
-	var contentType string
+	requestExtension := getExtensionFromFilePath(queryFile)
+	contentType := getContentTypeFromExtension(requestExtension)
 
-	switch requestExtension {
-	case "png":
-		contentType = "image/png"
-		break
-	case "jpg", "jpeg":
-		contentType = "image/jpeg"
-		break
-	case "bmp":
-		contentType = "image/bmp"
-		break
+	if !isSupportedImage(requestExtension) {
+		w.WriteHeader(400)
+		_, _ = w.Write([]byte("Not a supported image"))
+		return
 	}
 
 	if strings.HasSuffix(checkAbsPath, ".cbz") {
