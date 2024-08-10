@@ -88,7 +88,7 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 			readInfo.Pages, err = getPageListFromCbzEnum(zipReader)
 			if err != nil {
 				w.WriteHeader(500)
-				w.Write([]byte("Failed when loading cbz file. Unable to fetch images."))
+				_, _ = w.Write([]byte("Failed when loading cbz file. Unable to fetch images."))
 				log.Println(err)
 				return
 			}
@@ -99,7 +99,6 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte("Unable to read cbz file"))
 			return
 		} else {
-
 			comicInfo := comic_info.ComicInfo{}
 
 			rawComicInfo := &bytes.Buffer{}
@@ -107,7 +106,6 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				w.WriteHeader(500)
 				_, _ = w.Write([]byte("Failed to read ComicInfo.xml"))
-				panic(err)
 				log.Println(err)
 				return
 			}
@@ -121,6 +119,9 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			readInfo.ComicTitle = comicInfo.Title
+			if comicInfo.Series != "" {
+				readInfo.ComicTitle += " - " + comicInfo.Series
+			}
 
 			readInfo.Pages, err = getPageListFromCbzEnum(zipReader)
 			if err != nil {
