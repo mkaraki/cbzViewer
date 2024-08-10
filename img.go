@@ -33,6 +33,11 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cacheActive := fileCacheCheck(checkAbsPath, w, r)
+	if cacheActive {
+		return
+	}
+
 	baseFileExtension := getExtensionFromFilePath(checkAbsPath)
 
 	switch baseFileExtension {
@@ -66,6 +71,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.Header().Set("Content-Type", contentType)
+		fileCacheSend(checkAbsPath, w)
 
 		if requestExtension == "lep" {
 			err = decodeLepton(w, imgData)
@@ -158,6 +164,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		w.Header().Set("Content-Type", "image/webp")
+		fileCacheSend(checkAbsPath, w)
 		w.WriteHeader(200)
 		_, _ = w.Write(imgRaw)
 	default:

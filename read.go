@@ -35,19 +35,24 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 
 	queryPath := query.Get("path")
 
-	// Read template
-	html, err := template.ParseFiles("templates/read.html")
-	if err != nil {
-		w.WriteHeader(500)
-		log.Println(err)
-		return
-	}
-
 	// Check is user accessible and what dir/file user want to access.
 	isUserAccessible, checkAbsPath, err := getRealPath(queryPath, w)
 
 	if !isUserAccessible || err != nil {
 		// HTTP response is already returned by getRealPath
+		return
+	}
+
+	cacheActive := fileCacheCheck(checkAbsPath, w, r)
+	if cacheActive {
+		return
+	}
+
+	// Read template
+	html, err := template.ParseFiles("templates/read.html")
+	if err != nil {
+		w.WriteHeader(500)
+		log.Println(err)
 		return
 	}
 
@@ -127,6 +132,7 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fileCacheSend(checkAbsPath, w)
 	err = html.Execute(w, readInfo)
 	if err != nil {
 		w.WriteHeader(500)

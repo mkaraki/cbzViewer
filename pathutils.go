@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -121,4 +122,35 @@ func getContentTypeFromExtension(requestExtension string) string {
 	}
 
 	return contentType
+}
+
+func getFileMTimeString(filePath string) string {
+	stat, err := os.Stat(filePath)
+	if err != nil {
+		return ""
+	}
+	return stat.ModTime().Format(http.TimeFormat)
+}
+
+func fileCacheCheck(filePath string, w http.ResponseWriter, r *http.Request) bool {
+	modifiedSince := r.Header.Get("If-Modified-Since")
+	if modifiedSince == "" {
+		return false
+	} else {
+		expectTime := getFileMTimeString(filePath)
+		if modifiedSince == expectTime {
+			w.WriteHeader(http.StatusNotModified)
+			return true
+		} else {
+			return false
+		}
+	}
+}
+
+func fileCacheSend(filePath string, w http.ResponseWriter) {
+	mTimeStr := getFileMTimeString(filePath)
+	if mTimeStr == "" {
+		return
+	}
+	w.Header().Set("Last-Modified", mTimeStr)
 }

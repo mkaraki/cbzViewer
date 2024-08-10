@@ -27,6 +27,11 @@ func thumbHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cacheActive := fileCacheCheck(checkAbsPath, w, r)
+	if cacheActive {
+		return
+	}
+
 	firstPageName := getFirstPageName(checkAbsPath)
 
 	if firstPageName == "" {
@@ -38,6 +43,7 @@ func thumbHandler(w http.ResponseWriter, r *http.Request) {
 		"&f=" + url.QueryEscape(firstPageName) +
 		"&thumb=1"
 
+	fileCacheSend(checkAbsPath, w)
 	w.Header().Set("Location", imgLocation)
 	w.WriteHeader(301)
 }
