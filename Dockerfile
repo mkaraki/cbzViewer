@@ -10,6 +10,10 @@ RUN cargo build --release
 
 FROM golang:1.22-bookworm AS build
 
+RUN apt-get update && \
+    apt-get install -y \
+    libmagickwand-dev
+
 WORKDIR /app
 COPY --from=lepton_jpeg_build /lepton_jpeg_rust/target/release/liblepton_jpeg.so /app/
 COPY . /app/
@@ -17,6 +21,14 @@ COPY . /app/
 RUN go build -ldflags '-linkmode external -extldflags=-L=.'
 
 FROM debian:bookworm
+
+RUN apt-get update && \
+    apt-get install -y \
+    libmagickwand-dev \
+    && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN sed -i '/disable ghostscript format types/,+6d' /etc/ImageMagick-6/policy.xml
 
 COPY --from=lepton_jpeg_build /lepton_jpeg_rust/target/release/liblepton_jpeg.so /usr/lib/
 RUN ldconfig

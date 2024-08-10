@@ -2,11 +2,12 @@ package main
 
 import (
 	"archive/zip"
+	"gopkg.in/gographics/imagick.v2/imagick"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"strings"
+	"strconv"
 )
 
 func imgHandler(w http.ResponseWriter, r *http.Request) {
@@ -30,16 +31,19 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	requestExtension := getExtensionFromFilePath(queryFile)
-	contentType := getContentTypeFromExtension(requestExtension)
+	baseFileExtension := getExtensionFromFilePath(checkAbsPath)
 
-	if !isSupportedImage(requestExtension) {
-		w.WriteHeader(400)
-		_, _ = w.Write([]byte("Not a supported image"))
-		return
-	}
+	switch baseFileExtension {
+	case "cbz":
+		requestExtension := getExtensionFromFilePath(queryFile)
+		contentType := getContentTypeFromExtension(requestExtension)
 
-	if strings.HasSuffix(checkAbsPath, ".cbz") {
+		if !isSupportedImage(requestExtension) {
+			w.WriteHeader(400)
+			_, _ = w.Write([]byte("Not a supported image"))
+			return
+		}
+
 		zipReader, err := zip.OpenReader(checkAbsPath)
 		if err != nil {
 			w.WriteHeader(500)
@@ -71,7 +75,49 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 			return
 		}
-	} else {
+	case "pdf":
+		imagick.Initialize()
+		defer imagick.Terminate()
+		mw := imagick.NewMagickWand()
+		defer mw.Destroy()
+		err = mw.ReadImage(checkAbsPath)
+		if err != nil {
+			w.WriteHeader(500)
+			_, _ = w.Write([]byte("Failed when loading pdf file"))
+			log.Println(err)
+			return
+		}
+
+		pageNum, err := strconv.Atoi(queryFile)
+		if err != nil {
+			w.WriteHeader(400)
+			_, _ = w.Write([]byte("Unable to get page number"))
+			log.Println(err)
+			return
+		}
+
+		mw.SetIteratorIndex(pageNum - 1 /* Request starts with 1 but imagick takes start with 0	 */)
+
+		err = mw.SetImageFormat("jpg")
+		if err != nil {
+			w.WriteHeader(500)
+			_, _ = w.Write([]byte("Unable to convert image"))
+			log.Println(err)
+			return
+		}
+
+		img_raw, err := mw.GetImageBlob()
+		if err != nil {
+			w.WriteHeader(500)
+			_, _ = w.Write([]byte("Unable to export image"))
+			log.Println(err)
+			return
+		}
+
+		w.Header().Set("Content-Type", "image/jpeg")
+		w.WriteHeader(200)
+		_, _ = w.Write(img_raw)
+	default:
 		w.WriteHeader(400)
 		_, _ = w.Write([]byte("Non supported type."))
 		return

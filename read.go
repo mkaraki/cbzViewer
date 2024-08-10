@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"gopkg.in/gographics/imagick.v2/imagick"
 	"html/template"
 	"log"
 	"net/http"
@@ -100,6 +101,26 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		readInfo.PageCnt = len(readInfo.Pages)
+	case "pdf":
+		imagick.Initialize()
+		defer imagick.Terminate()
+		mw := imagick.NewMagickWand()
+		defer mw.Destroy()
+		err = mw.ReadImage(checkAbsPath)
+		if err != nil {
+			w.WriteHeader(500)
+			_, _ = w.Write([]byte("Failed when loading pdf file"))
+			log.Println(err)
+			return
+		}
+		pageCnt := mw.GetNumberImages()
+		readInfo.PageCnt = int(pageCnt)
+		for i := uint(1); i <= pageCnt; i++ {
+			readInfo.Pages = append(readInfo.Pages, PageInfo{
+				PageNo:    int(i),
+				ImageFile: strconv.Itoa(int(i)),
+			})
+		}
 	default:
 		w.WriteHeader(400)
 		_, _ = w.Write([]byte("Non supported type."))

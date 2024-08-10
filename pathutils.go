@@ -95,6 +95,8 @@ func isSupportedComic(requestExtension string) bool {
 	switch requestExtension {
 	case "cbz":
 		return true
+	case "pdf":
+		return true
 	default:
 		return false
 	}

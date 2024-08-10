@@ -64,6 +64,8 @@ func getFirstPageName(comicFilePath string) string {
 		}
 
 		return pages[0].ImageFile
+	case "pdf":
+		return "1"
 	default:
 		log.Println("unknown comic format")
 		return ""
