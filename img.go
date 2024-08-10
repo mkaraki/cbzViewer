@@ -23,6 +23,8 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 	queryPath := query.Get("path")
 	queryFile := query.Get("f")
 
+	isThumb := query.Has("thumb")
+
 	// Check is user accessible and what dir/file user want to access.
 	isUserAccessible, checkAbsPath, err := getRealPath(queryPath, w)
 
@@ -80,13 +82,6 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		defer imagick.Terminate()
 		mw := imagick.NewMagickWand()
 		defer mw.Destroy()
-		err = mw.ReadImage(checkAbsPath)
-		if err != nil {
-			w.WriteHeader(500)
-			_, _ = w.Write([]byte("Failed when loading pdf file"))
-			log.Println(err)
-			return
-		}
 
 		pageNum, err := strconv.Atoi(queryFile)
 		if err != nil {
@@ -96,9 +91,57 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		mw.SetIteratorIndex(pageNum - 1 /* Request starts with 1 but imagick takes start with 0	 */)
+		if isThumb {
+			err = mw.SetResolution(50, 50)
+		} else {
+			err = mw.SetResolution(600, 600)
+		}
+		if err != nil {
+			w.WriteHeader(500)
+			_, _ = w.Write([]byte("Failed when setting resolution"))
+			log.Println(err)
+			return
+		}
 
-		err = mw.SetImageFormat("jpg")
+		err = mw.ReadImage(checkAbsPath + "[" + strconv.Itoa(pageNum-1) + "]")
+		if err != nil {
+			w.WriteHeader(500)
+			_, _ = w.Write([]byte("Failed when loading pdf file"))
+			log.Println(err)
+			return
+		}
+
+		err = mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_FLATTEN)
+		if err != nil {
+			w.WriteHeader(500)
+			_, _ = w.Write([]byte("Failed to remove alpha channel"))
+			log.Println(err)
+			return
+		}
+
+		if !isThumb {
+			err = mw.ResampleImage(192, 192, imagick.FILTER_CUBIC, 1.0)
+			if err != nil {
+				w.WriteHeader(500)
+				_, _ = w.Write([]byte("Failed to resample image"))
+				log.Println(err)
+				return
+			}
+
+			err = mw.SetCompressionQuality(80)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+		} else {
+			err = mw.SetCompressionQuality(15)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+		}
+
+		err = mw.SetImageFormat("webp")
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to convert image"))
@@ -106,7 +149,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		img_raw, err := mw.GetImageBlob()
+		imgRaw, err := mw.GetImageBlob()
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to export image"))
@@ -114,9 +157,9 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		w.Header().Set("Content-Type", "image/jpeg")
+		w.Header().Set("Content-Type", "image/webp")
 		w.WriteHeader(200)
-		_, _ = w.Write(img_raw)
+		_, _ = w.Write(imgRaw)
 	default:
 		w.WriteHeader(400)
 		_, _ = w.Write([]byte("Non supported type."))

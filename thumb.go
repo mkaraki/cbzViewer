@@ -35,7 +35,8 @@ func thumbHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	imgLocation := "img?path=" + url.QueryEscape(queryPath) +
-		"&f=" + url.QueryEscape(firstPageName)
+		"&f=" + url.QueryEscape(firstPageName) +
+		"&thumb=1"
 
 	w.Header().Set("Location", imgLocation)
 	w.WriteHeader(301)
