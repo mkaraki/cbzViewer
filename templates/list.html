@@ -26,7 +26,7 @@
         </a>
         {{ else }}
         <a href="read?path={{ .Path }}">
-            <img src="img?path={{ .Path }}&f={{ .TopPage.ImageFile }}" alt="{{ .Name }}" class="thumb"><br />
+            <img src="thumb?path={{ .Path }}" alt="{{ .Name }}" class="thumb" loading="lazy"><br />
             {{ .Name }}
         </a>
         {{ end }}

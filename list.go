@@ -1,7 +1,6 @@
 package main
 
 import (
-	"archive/zip"
 	"html/template"
 	"log"
 	"net/http"
@@ -10,10 +9,9 @@ import (
 )
 
 type ListItem struct {
-	Name    string
-	Path    string
-	IsDir   bool
-	TopPage PageInfo
+	Name  string
+	Path  string
+	IsDir bool
 }
 
 type ListData struct {
@@ -85,22 +83,14 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 		fileName := e.Name()
 		filePath := path.Join(queryPath, fileName)
 
-		var pageInfo PageInfo
-
 		if !isDir && !isSupportedComic(ext) {
 			continue
-		} else if !isDir {
-			pageInfo = PageInfo{
-				PageNo:    0,
-				ImageFile: getFirstPageName(filePath),
-			}
 		}
 
 		listData.Items = append(listData.Items, ListItem{
-			IsDir:   isDir,
-			Name:    fileName,
-			Path:    filePath,
-			TopPage: pageInfo,
+			IsDir: isDir,
+			Name:  fileName,
+			Path:  filePath,
 		})
 	}
 
@@ -109,39 +99,5 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
 		log.Println(err)
 		return
-	}
-}
-
-func getFirstPageName(comicFilePath string) string {
-	extension := getExtensionFromFilePath(comicFilePath)
-	_, checkAbsPath, err := getRealPath(comicFilePath, nil)
-	if err != nil {
-		log.Println(err)
-		return ""
-	}
-
-	switch extension {
-	case "cbz":
-		zipReader, err := zip.OpenReader(checkAbsPath)
-		if err != nil {
-			log.Println(err)
-			return ""
-		}
-
-		pages, err := getPageListFromCbzEnum(zipReader)
-		if err != nil {
-			log.Println(err)
-			return ""
-		}
-
-		if len(pages) < 1 {
-			log.Println("no pages exists")
-			return ""
-		}
-
-		return pages[0].ImageFile
-	default:
-		log.Println("unknown comic format")
-		return ""
 	}
 }

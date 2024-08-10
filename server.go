@@ -37,6 +37,7 @@ func main() {
 	http.HandleFunc("/list", listHandler)
 	http.HandleFunc("/read", readHandler)
 	http.HandleFunc("/img", imgHandler)
+	http.HandleFunc("/thumb", thumbHandler)
 
 	http.HandleFunc("/legal", legalHandler)
 
