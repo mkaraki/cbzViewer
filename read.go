@@ -2,8 +2,12 @@ package main
 
 import (
 	"archive/zip"
+	"bytes"
+	"encoding/xml"
+	"github.com/mkaraki/cbzViewer/comic_info"
 	"gopkg.in/gographics/imagick.v2/imagick"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"sort"
@@ -79,8 +83,8 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		/*comicInfoFile, err := zipReader.Open("ComicInfo.xml")
-		if os.IsNotExist(err) {
+		comicInfoFile, err := zipReader.Open("ComicInfo.xml")
+		if comicInfoFile == nil {
 			readInfo.Pages, err = getPageListFromCbzEnum(zipReader)
 			if err != nil {
 				w.WriteHeader(500)
@@ -92,20 +96,42 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 			readInfo.PageCnt = len(readInfo.Pages)
 		} else if err != nil {
 			w.WriteHeader(500)
-			w.Write([]byte("Unable to read cbz file"))
+			_, _ = w.Write([]byte("Unable to read cbz file"))
 			return
-		}*/
+		} else {
 
-		//comicInfoFile.Read()
-		readInfo.Pages, err = getPageListFromCbzEnum(zipReader)
-		if err != nil {
-			w.WriteHeader(500)
-			_, _ = w.Write([]byte("Failed when loading cbz file. Unable to fetch images."))
-			log.Println(err)
-			return
+			comicInfo := comic_info.ComicInfo{}
+
+			rawComicInfo := &bytes.Buffer{}
+			_, err = io.Copy(rawComicInfo, comicInfoFile)
+			if err != nil {
+				w.WriteHeader(500)
+				_, _ = w.Write([]byte("Failed to read ComicInfo.xml"))
+				panic(err)
+				log.Println(err)
+				return
+			}
+
+			err = xml.Unmarshal(rawComicInfo.Bytes(), &comicInfo)
+			if err != nil {
+				w.WriteHeader(500)
+				_, _ = w.Write([]byte("Failed to parse ComicInfo.xml"))
+				log.Println(err)
+				return
+			}
+
+			readInfo.ComicTitle = comicInfo.Title
+
+			readInfo.Pages, err = getPageListFromCbzEnum(zipReader)
+			if err != nil {
+				w.WriteHeader(500)
+				_, _ = w.Write([]byte("Failed when loading cbz file. Unable to fetch images."))
+				log.Println(err)
+				return
+			}
+
+			readInfo.PageCnt = len(readInfo.Pages)
 		}
-
-		readInfo.PageCnt = len(readInfo.Pages)
 	case "pdf":
 		imagick.Initialize()
 		defer imagick.Terminate()
