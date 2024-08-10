@@ -100,7 +100,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if isThumb {
 			err = mw.SetResolution(50, 50)
 		} else {
-			err = mw.SetResolution(600, 600)
+			err = mw.SetResolution(350, 350)
 		}
 		if err != nil {
 			w.WriteHeader(500)
