@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
-	"strings"
 )
 
 type PageInfo struct {
@@ -62,7 +61,10 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if strings.HasSuffix(checkAbsPath, ".cbz") {
+	extension := getExtensionFromFilePath(checkAbsPath)
+
+	switch extension {
+	case "cbz":
 		zipReader, err := zip.OpenReader(checkAbsPath)
 		if err != nil {
 			w.WriteHeader(500)
@@ -98,8 +100,7 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		readInfo.PageCnt = len(readInfo.Pages)
-
-	} else {
+	default:
 		w.WriteHeader(400)
 		_, _ = w.Write([]byte("Non supported type."))
 		return

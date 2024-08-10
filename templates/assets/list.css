@@ -1,0 +1,15 @@
+ul {
+    list-style: none;
+    padding-left: 10px;
+}
+.thumb {
+    max-height: 160px;
+    max-width: 160px;
+}
+.item {
+    display: inline-block;
+    border: 1px solid gray;
+    margin: 15px;
+    padding: 5px;
+    width: 172px;
+}

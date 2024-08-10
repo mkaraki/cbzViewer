@@ -4,13 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ls</title>
-    <style>
-        ul {
-            list-style: none;
-            padding-left: 10px;
-        }
-    </style>
+    <title>Index of {{ .CurrentDir }}</title>
+    <link rel="stylesheet" href="assets/list.css">
 </head>
 
 <body>
@@ -20,22 +15,24 @@
     {{ if .HasParent }}
     <li><a href="list?path={{ .ParentDir }}">../</a></li>
     {{ end }}
-    {{ range .Items }}
-    <li>
-        {{ if .IsDir }}
-            📂
-            <a href="list?path={{ .Path }}">
-                {{ .Name }}/
-            </a>
-        {{ else }}
-            📄
-            <a href="read?path={{ .Path }}">
-                {{ .Name }}
-            </a>
-        {{ end }}
-    </li>
-    {{ end }}
 </ul>
+<div>
+    {{ range .Items }}
+    <div class="item">
+        {{ if .IsDir }}
+        📂
+        <a href="list?path={{ .Path }}">
+            {{ .Name }}/
+        </a>
+        {{ else }}
+        <a href="read?path={{ .Path }}">
+            <img src="img?path={{ .Path }}&f={{ .TopPage.ImageFile }}" alt="{{ .Name }}" class="thumb"><br />
+            {{ .Name }}
+        </a>
+        {{ end }}
+    </div>
+    {{ end }}
+</div>
 
 <hr />
 <a href="legal">Legal info</a>
