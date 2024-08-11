@@ -4,7 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/xml"
-	"github.com/mkaraki/cbzViewer/comic_info"
+	"github.com/mkaraki/go_comic_info"
 	"gopkg.in/gographics/imagick.v2/imagick"
 	"html/template"
 	"io"
