@@ -4,13 +4,13 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/xml"
+	"github.com/mattn/natural"
 	"github.com/mkaraki/go_comic_info"
 	"gopkg.in/gographics/imagick.v2/imagick"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
-	"sort"
 	"strconv"
 )
 
@@ -174,11 +174,7 @@ func getPageListFromCbzEnum(zipReader *zip.ReadCloser) ([]PageInfo, error) {
 		files = append(files, e.Name)
 	}
 
-	sort.Slice(files, func(i, j int) bool {
-		ni, _ := strconv.Atoi(files[i])
-		nj, _ := strconv.Atoi(files[j])
-		return ni < nj
-	})
+	natural.Sort(files)
 
 	var pageInfo []PageInfo
 	for i, f := range files {

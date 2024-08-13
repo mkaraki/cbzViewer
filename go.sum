@@ -1,3 +1,5 @@
+github.com/mattn/natural v0.0.0-20150430114811-6b2ca5c8eb9a h1:cvPnAcctVrPwI7uMkHBM2EFC0n21PQ1O8EVUU1ruKiY=
+github.com/mattn/natural v0.0.0-20150430114811-6b2ca5c8eb9a/go.mod h1:UAbhZdShrNv4F/eTZj8Ri2DjtTSMpNIBHtJwTzgFrcM=
 github.com/mkaraki/go_comic_info v0.1.1 h1:k4kJfMT5rIQiV7nw+VFtuXUw9Il3CGFR6IE4JIHWOCI=
 github.com/mkaraki/go_comic_info v0.1.1/go.mod h1:ju4EgkU5MJ9O77AmFJQuDaEhugDpS4U5G2tbtA9f33k=
 gopkg.in/gographics/imagick.v2 v2.7.0 h1:Acluvnk5MhtETFX4EVnt9NbjC32ROaaC3bx6nJueHJk=
