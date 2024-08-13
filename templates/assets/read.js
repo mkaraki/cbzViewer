@@ -15,3 +15,22 @@ function chPageInc() {
     document.getElementById((page + 1).toString()).scrollIntoView();
     pgNum.innerText = (page + 1).toString();
 }
+
+window.onload = () => {
+    document.onkeydown = (e) => {
+        switch(e.key)
+        {
+            case 'ArrowLeft':
+            case 'ArrowUp':
+            case 'PageUp':
+                chPageDec();
+                break;
+
+            case 'ArrowRight':
+            case 'ArrowDown':
+            case 'PageDown':
+                chPageInc();
+                break;
+        }
+    }
+}
