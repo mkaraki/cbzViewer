@@ -138,6 +138,13 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 		defer imagick.Terminate()
 		mw := imagick.NewMagickWand()
 		defer mw.Destroy()
+		err = mw.SetResolution(50, 50)
+		if err != nil {
+			w.WriteHeader(500)
+			_, _ = w.Write([]byte("Failed to prepare read pdf (Resolution)"))
+			log.Println(err)
+			return
+		}
 		err = mw.ReadImage(checkAbsPath)
 		if err != nil {
 			w.WriteHeader(500)
