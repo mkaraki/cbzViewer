@@ -16,6 +16,12 @@ function chPageInc() {
     pgNum.innerText = (page + 1).toString();
 }
 
+function pageSelect() {
+    const page = parseInt(prompt("Page?", pgNum.innerText));
+    document.getElementById((page).toString()).scrollIntoView();
+    pgNum.innerText = (page).toString();
+}
+
 window.onload = () => {
     document.onkeydown = (e) => {
         switch(e.key)
