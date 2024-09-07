@@ -20,9 +20,11 @@
     {{ range .Items }}
     <div class="item">
         {{ if .IsDir }}
-        📂
         <a href="list?path={{ .Path }}">
-            {{ .Name }}/
+            {{ if ne .ThumbPath "" }}
+            <img src="thumb?path={{ .ThumbPath }}" alt="{{ .Name }}" class="thumb" loading="lazy"><br />
+            {{ end }}
+            📂 {{ .Name }}/
         </a>
         {{ else }}
         <a href="read?path={{ .Path }}">

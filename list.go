@@ -6,12 +6,14 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 type ListItem struct {
-	Name  string
-	Path  string
-	IsDir bool
+	Name      string
+	Path      string
+	IsDir     bool
+	ThumbPath string
 }
 
 type ListData struct {
@@ -82,16 +84,40 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 
 		fileName := e.Name()
 		filePath := path.Join(queryPath, fileName)
+		realFilePath := path.Join(checkAbsPath, fileName)
 
 		if !isDir && !isSupportedComic(ext) {
 			continue
 		}
 
-		listData.Items = append(listData.Items, ListItem{
-			IsDir: isDir,
-			Name:  fileName,
-			Path:  filePath,
-		})
+		listItem := ListItem{
+			IsDir:     isDir,
+			Name:      fileName,
+			Path:      filePath,
+			ThumbPath: "",
+		}
+
+		if isDir {
+			err = filepath.Walk(realFilePath, func(p string, info os.FileInfo, err error) error {
+				if listItem.ThumbPath != "" {
+					return nil
+				}
+
+				if info.IsDir() {
+					return nil
+				}
+
+				fileExt := getExtensionFromFilePath(info.Name())
+				if isSupportedComic(fileExt) {
+					p = p[len(realFilePath):]
+					listItem.ThumbPath = path.Join(filePath, p)
+				}
+
+				return nil
+			})
+		}
+
+		listData.Items = append(listData.Items, listItem)
 	}
 
 	err = html.Execute(w, listData)
