@@ -183,14 +183,17 @@ func getPageListFromCbzEnum(zipReader *zip.ReadCloser) ([]PageInfo, error) {
 
 	natural.Sort(files)
 
+	var i = 0
+
 	var pageInfo []PageInfo
-	for i, f := range files {
+	for _, f := range files {
 		fileExt := getExtensionFromFilePath(f)
 		if !isSupportedImage(fileExt) {
 			continue
 		}
 
 		pageInfo = append(pageInfo, PageInfo{PageNo: i + 1, ImageFile: f})
+		i++
 	}
 
 	return pageInfo, nil
