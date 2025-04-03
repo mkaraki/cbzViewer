@@ -45,6 +45,8 @@ func main() {
 			fmt.Printf("Sentry initialization failed: %v\n", err)
 		}
 
+		println("Sentry initialized")
+
 		sentryHandler := sentryhttp.New(sentryhttp.Options{})
 
 		http.HandleFunc("/list", sentryHandler.HandleFunc(listHandler))
