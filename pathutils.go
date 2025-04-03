@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/getsentry/sentry-go"
 	"log"
 	"net/http"
 	"os"
@@ -17,6 +18,9 @@ func getRealPath(clientPath string, httpResponse http.ResponseWriter) (bool, str
 		if httpResponse != nil {
 			httpResponse.WriteHeader(500)
 		}
+		if conf.SentryDsn != "" {
+			sentry.CaptureException(err)
+		}
 		log.Println(err)
 		return true, "", err
 	}
@@ -25,6 +29,9 @@ func getRealPath(clientPath string, httpResponse http.ResponseWriter) (bool, str
 	if err != nil {
 		if httpResponse != nil {
 			httpResponse.WriteHeader(500)
+		}
+		if conf.SentryDsn != "" {
+			sentry.CaptureException(err)
 		}
 		log.Println(err)
 		return true, "", err
@@ -48,6 +55,10 @@ func getParentDir(realPath string) (bool, string, error) {
 	// Get absolute dir of cbz store root for parent detection.
 	absPath, err := filepath.Abs(conf.CbzDir)
 	if err != nil {
+		if conf.SentryDsn != "" {
+			sentry.CaptureException(err)
+		}
+		log.Println(err)
 		return false, "", err
 	}
 
@@ -127,6 +138,10 @@ func getContentTypeFromExtension(requestExtension string) string {
 func getFileMTimeString(filePath string) string {
 	stat, err := os.Stat(filePath)
 	if err != nil {
+		if conf.SentryDsn != "" {
+			sentry.CaptureException(err)
+		}
+		log.Println(err)
 		return ""
 	}
 	return stat.ModTime().Format(http.TimeFormat)

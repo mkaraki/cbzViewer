@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/getsentry/sentry-go"
+	sentryhttp "github.com/getsentry/sentry-go/http"
 	"io"
 	"log"
 	"net/http"
@@ -34,15 +36,33 @@ func main() {
 		log.Fatal(err)
 	}
 
-	http.HandleFunc("/list", listHandler)
-	http.HandleFunc("/read", readHandler)
-	http.HandleFunc("/img", imgHandler)
-	http.HandleFunc("/thumb", thumbHandler)
-
-	http.HandleFunc("/legal", legalHandler)
-
 	fs := http.FileServer(http.Dir("templates/assets/"))
-	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
+
+	if conf.SentryDsn != "" {
+		if err := sentry.Init(sentry.ClientOptions{
+			Dsn: conf.SentryDsn,
+		}); err != nil {
+			fmt.Printf("Sentry initialization failed: %v\n", err)
+		}
+
+		sentryHandler := sentryhttp.New(sentryhttp.Options{})
+
+		http.HandleFunc("/list", sentryHandler.HandleFunc(listHandler))
+		http.HandleFunc("/read", sentryHandler.HandleFunc(readHandler))
+		http.HandleFunc("/img", sentryHandler.HandleFunc(imgHandler))
+		http.HandleFunc("/thumb", sentryHandler.HandleFunc(thumbHandler))
+
+		http.HandleFunc("/legal", sentryHandler.HandleFunc(legalHandler))
+		http.Handle("/assets/", sentryHandler.Handle(http.StripPrefix("/assets/", fs)))
+	} else {
+		http.HandleFunc("/list", listHandler)
+		http.HandleFunc("/read", readHandler)
+		http.HandleFunc("/img", imgHandler)
+		http.HandleFunc("/thumb", thumbHandler)
+
+		http.HandleFunc("/legal", legalHandler)
+		http.Handle("/assets/", http.StripPrefix("/assets/", fs))
+	}
 
 	fmt.Println("Starting server")
 	err = http.ListenAndServe(":8080", nil)

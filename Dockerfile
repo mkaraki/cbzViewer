@@ -1,6 +1,7 @@
 FROM rust:1-bookworm AS lepton_jpeg_build
 
-RUN apt-get update && apt-get install -y git
+RUN apt-get update -o Acquire::CompressionTypes::Order::=gz && \
+    apt-get install -y git
 
 WORKDIR /
 RUN git clone --depth 1 https://github.com/microsoft/lepton_jpeg_rust.git
@@ -10,7 +11,7 @@ RUN cargo build --release
 
 FROM golang:1.22-bookworm AS build
 
-RUN apt-get update && \
+RUN apt-get update -o Acquire::CompressionTypes::Order::=gz && \
     apt-get install -y \
     libmagickwand-dev
 
@@ -22,7 +23,7 @@ RUN go build -ldflags '-linkmode external -extldflags=-L=.'
 
 FROM debian:bookworm
 
-RUN apt-get update && \
+RUN apt-get update -o Acquire::CompressionTypes::Order::=gz && \
     apt-get install -y \
     libmagickwand-6.q16-6 \
     && apt-get clean && \

@@ -1,0 +1,6 @@
+services:
+  app:
+    build: .
+    volumes:
+      - ./books:/books:ro
+      - ./config.json:/app/config.json:ro

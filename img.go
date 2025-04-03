@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"github.com/getsentry/sentry-go"
 	"github.com/mkaraki/cbzViewer/lepton_jpeg"
 	"gopkg.in/gographics/imagick.v2/imagick"
 	"io"
@@ -56,6 +57,9 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed when loading cbz file"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
 			log.Println(err)
 			return
 		}
@@ -64,10 +68,17 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if os.IsNotExist(err) {
 			w.WriteHeader(404)
 			_, _ = w.Write([]byte("No such image"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
 			return
 		} else if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to read image file"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
+			log.Println(err)
 			return
 		}
 
@@ -79,8 +90,13 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			_, err = io.Copy(w, imgData)
 		}
+
 		if err != nil {
 			w.WriteHeader(500)
+			_, _ = w.Write([]byte("Unable to export image"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
 			log.Println(err)
 			return
 		}
@@ -94,6 +110,9 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(400)
 			_, _ = w.Write([]byte("Unable to get page number"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
 			log.Println(err)
 			return
 		}
@@ -106,6 +125,9 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed when setting resolution"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
 			log.Println(err)
 			return
 		}
@@ -114,6 +136,9 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed when loading pdf file"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
 			log.Println(err)
 			return
 		}
@@ -122,6 +147,9 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed to remove alpha channel"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
 			log.Println(err)
 			return
 		}
@@ -131,18 +159,29 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				w.WriteHeader(500)
 				_, _ = w.Write([]byte("Failed to resample image"))
+				if conf.SentryDsn != "" {
+					sentry.CaptureException(err)
+				}
 				log.Println(err)
 				return
 			}
 
 			err = mw.SetCompressionQuality(80)
 			if err != nil {
+				w.WriteHeader(500)
+				if conf.SentryDsn != "" {
+					sentry.CaptureException(err)
+				}
 				log.Println(err)
 				return
 			}
 		} else {
 			err = mw.SetCompressionQuality(15)
 			if err != nil {
+				w.WriteHeader(500)
+				if conf.SentryDsn != "" {
+					sentry.CaptureException(err)
+				}
 				log.Println(err)
 				return
 			}
@@ -152,6 +191,9 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to convert image"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
 			log.Println(err)
 			return
 		}
@@ -160,6 +202,9 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to export image"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
 			log.Println(err)
 			return
 		}

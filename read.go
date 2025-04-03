@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/xml"
+	"github.com/getsentry/sentry-go"
 	"github.com/mattn/natural"
 	"github.com/mkaraki/go_comic_info"
 	"gopkg.in/gographics/imagick.v2/imagick"
@@ -56,6 +57,9 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 	html, err := template.ParseFiles("templates/read.html")
 	if err != nil {
 		w.WriteHeader(500)
+		if conf.SentryDsn != "" {
+			sentry.CaptureException(err)
+		}
 		log.Println(err)
 		return
 	}
@@ -67,6 +71,9 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 	_, readInfo.ParentDir, err = getParentDir(checkAbsPath)
 	if err != nil {
 		w.WriteHeader(500)
+		if conf.SentryDsn != "" {
+			sentry.CaptureException(err)
+		}
 		log.Println(err)
 		return
 	}
@@ -79,6 +86,9 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed when loading cbz file"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
 			log.Println(err)
 			return
 		}
@@ -89,6 +99,9 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				w.WriteHeader(500)
 				_, _ = w.Write([]byte("Failed when loading cbz file. Unable to fetch images."))
+				if conf.SentryDsn != "" {
+					sentry.CaptureException(err)
+				}
 				log.Println(err)
 				return
 			}
@@ -97,6 +110,10 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 		} else if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to read cbz file"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
+			log.Println(err)
 			return
 		} else {
 			comicInfo := comic_info.ComicInfo{}
@@ -106,6 +123,9 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				w.WriteHeader(500)
 				_, _ = w.Write([]byte("Failed to read ComicInfo.xml"))
+				if conf.SentryDsn != "" {
+					sentry.CaptureException(err)
+				}
 				log.Println(err)
 				return
 			}
@@ -114,6 +134,9 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				w.WriteHeader(500)
 				_, _ = w.Write([]byte("Failed to parse ComicInfo.xml"))
+				if conf.SentryDsn != "" {
+					sentry.CaptureException(err)
+				}
 				log.Println(err)
 				return
 			}
@@ -127,6 +150,9 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				w.WriteHeader(500)
 				_, _ = w.Write([]byte("Failed when loading cbz file. Unable to fetch images."))
+				if conf.SentryDsn != "" {
+					sentry.CaptureException(err)
+				}
 				log.Println(err)
 				return
 			}
@@ -142,6 +168,9 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed to prepare read pdf (Resolution)"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
 			log.Println(err)
 			return
 		}
@@ -149,6 +178,9 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed when loading pdf file"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
 			log.Println(err)
 			return
 		}
@@ -170,6 +202,9 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 	err = html.Execute(w, readInfo)
 	if err != nil {
 		w.WriteHeader(500)
+		if conf.SentryDsn != "" {
+			sentry.CaptureException(err)
+		}
 		log.Println(err)
 		return
 	}
