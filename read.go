@@ -86,7 +86,11 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed when loading cbz file"))
-			panic(err)
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
+			log.Println(err)
+			return
 		}
 
 		comicInfoFile, err := zipReader.Open("ComicInfo.xml")
