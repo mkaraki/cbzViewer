@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 var conf *config
@@ -47,7 +48,10 @@ func main() {
 
 		println("Sentry initialized")
 
-		sentryHandler := sentryhttp.New(sentryhttp.Options{})
+		sentryHandler := sentryhttp.New(sentryhttp.Options{
+			Repanic: true,
+			Timeout: 10 * time.Second,
+		})
 
 		http.HandleFunc("/list", sentryHandler.HandleFunc(listHandler))
 		http.HandleFunc("/read", sentryHandler.HandleFunc(readHandler))
