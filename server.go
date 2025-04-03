@@ -46,6 +46,8 @@ func main() {
 			fmt.Printf("Sentry initialization failed: %v\n", err)
 		}
 
+		sentry.CaptureMessage("Application started")
+
 		println("Sentry initialized")
 
 		sentryHandler := sentryhttp.New(sentryhttp.Options{
