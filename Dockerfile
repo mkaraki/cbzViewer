@@ -26,6 +26,7 @@ FROM debian:bookworm
 RUN apt-get update -o Acquire::CompressionTypes::Order::=gz && \
     apt-get install -y \
     libmagickwand-6.q16-6 \
+    ca-certificates \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
