@@ -29,6 +29,13 @@ type ReadInfo struct {
 }
 
 func readHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	hub := sentry.GetHubFromContext(ctx)
+	if hub == nil {
+		hub = sentry.CurrentHub().Clone()
+		ctx = sentry.SetHubOnContext(ctx, hub)
+	}
+
 	// Get query params
 	query := r.URL.Query()
 
@@ -82,6 +89,8 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch extension {
 	case "cbz":
+		span := sentry.StartSpan(ctx, "read_cbz_zip_archive")
+
 		zipReader, err := zip.OpenReader(checkAbsPath)
 		if err != nil {
 			w.WriteHeader(500)
@@ -90,11 +99,17 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 				sentry.CaptureException(err)
 			}
 			log.Println(err)
+			span.Finish()
 			return
 		}
 
+		comic_info_span := span.StartChild("read_cbz_comic_info")
+
 		comicInfoFile, err := zipReader.Open("ComicInfo.xml")
 		if comicInfoFile == nil {
+			// If there are no `ComicInfo.xml` file
+			// we will just enumerate the files in the zip
+
 			readInfo.Pages, err = getPageListFromCbzEnum(zipReader)
 			if err != nil {
 				w.WriteHeader(500)
@@ -103,19 +118,28 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 					sentry.CaptureException(err)
 				}
 				log.Println(err)
+				comic_info_span.Finish()
+				span.Finish()
 				return
 			}
 
 			readInfo.PageCnt = len(readInfo.Pages)
+			comic_info_span.Finish()
 		} else if err != nil {
+			// On error reading `ComicInfo.xml` file
+
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to read cbz file"))
 			if conf.SentryDsn != "" {
 				sentry.CaptureException(err)
 			}
 			log.Println(err)
+			comic_info_span.Finish()
+			span.Finish()
 			return
 		} else {
+			// If `ComicInfo.xml` file exists
+
 			comicInfo := comic_info.ComicInfo{}
 
 			rawComicInfo := &bytes.Buffer{}
@@ -127,6 +151,8 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 					sentry.CaptureException(err)
 				}
 				log.Println(err)
+				comic_info_span.Finish()
+				span.Finish()
 				return
 			}
 
@@ -138,6 +164,8 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 					sentry.CaptureException(err)
 				}
 				log.Println(err)
+				comic_info_span.Finish()
+				span.Finish()
 				return
 			}
 
@@ -154,12 +182,18 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 					sentry.CaptureException(err)
 				}
 				log.Println(err)
+				comic_info_span.Finish()
+				span.Finish()
 				return
 			}
 
 			readInfo.PageCnt = len(readInfo.Pages)
+			comic_info_span.Finish()
 		}
+
+		span.Finish()
 	case "pdf":
+		span := sentry.StartSpan(ctx, "init_read_pdf")
 		imagick.Initialize()
 		defer imagick.Terminate()
 		mw := imagick.NewMagickWand()
@@ -172,8 +206,11 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 				sentry.CaptureException(err)
 			}
 			log.Println(err)
+			span.Finish()
 			return
 		}
+
+		span_read := span.StartChild("read_pdf")
 		err = mw.ReadImage(checkAbsPath)
 		if err != nil {
 			w.WriteHeader(500)
@@ -182,8 +219,12 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 				sentry.CaptureException(err)
 			}
 			log.Println(err)
+			span_read.Finish()
+			span.Finish()
 			return
 		}
+		span_read.Finish()
+
 		pageCnt := mw.GetNumberImages()
 		readInfo.PageCnt = int(pageCnt)
 		for i := uint(1); i <= pageCnt; i++ {
@@ -192,6 +233,7 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 				ImageFile: strconv.Itoa(int(i)),
 			})
 		}
+		span.Finish()
 	default:
 		w.WriteHeader(400)
 		_, _ = w.Write([]byte("Non supported type."))

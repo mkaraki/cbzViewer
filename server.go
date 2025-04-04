@@ -41,36 +41,35 @@ func main() {
 
 	if conf.SentryDsn != "" {
 		if err := sentry.Init(sentry.ClientOptions{
-			Dsn: conf.SentryDsn,
+			Dsn:              conf.SentryDsn,
+			TracesSampleRate: 1.0,
+			EnableTracing:    true,
 		}); err != nil {
 			fmt.Printf("Sentry initialization failed: %v\n", err)
 		}
-
-		sentry.CaptureMessage("Application started")
-
-		println("Sentry initialized")
-
-		sentryHandler := sentryhttp.New(sentryhttp.Options{
-			Repanic: true,
-			Timeout: 10 * time.Second,
-		})
-
-		http.HandleFunc("/list", sentryHandler.HandleFunc(listHandler))
-		http.HandleFunc("/read", sentryHandler.HandleFunc(readHandler))
-		http.HandleFunc("/img", sentryHandler.HandleFunc(imgHandler))
-		http.HandleFunc("/thumb", sentryHandler.HandleFunc(thumbHandler))
-
-		http.HandleFunc("/legal", sentryHandler.HandleFunc(legalHandler))
-		http.Handle("/assets/", sentryHandler.Handle(http.StripPrefix("/assets/", fs)))
 	} else {
-		http.HandleFunc("/list", listHandler)
-		http.HandleFunc("/read", readHandler)
-		http.HandleFunc("/img", imgHandler)
-		http.HandleFunc("/thumb", thumbHandler)
-
-		http.HandleFunc("/legal", legalHandler)
-		http.Handle("/assets/", http.StripPrefix("/assets/", fs))
+		if err := sentry.Init(sentry.ClientOptions{
+			TracesSampleRate: 1.0,
+			EnableTracing:    true,
+		}); err != nil {
+			fmt.Printf("Sentry initialization failed: %v\n", err)
+		}
 	}
+
+	println("Sentry initialized")
+
+	sentryHandler := sentryhttp.New(sentryhttp.Options{
+		Repanic: true,
+		Timeout: 10 * time.Second,
+	})
+
+	http.HandleFunc("/list", sentryHandler.HandleFunc(listHandler))
+	http.HandleFunc("/read", sentryHandler.HandleFunc(readHandler))
+	http.HandleFunc("/img", sentryHandler.HandleFunc(imgHandler))
+	http.HandleFunc("/thumb", sentryHandler.HandleFunc(thumbHandler))
+
+	http.HandleFunc("/legal", sentryHandler.HandleFunc(legalHandler))
+	http.Handle("/assets/", sentryHandler.Handle(http.StripPrefix("/assets/", fs)))
 
 	fmt.Println("Starting server")
 	err = http.ListenAndServe(":8080", nil)

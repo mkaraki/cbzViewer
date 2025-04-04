@@ -25,6 +25,13 @@ type ListData struct {
 }
 
 func listHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	hub := sentry.GetHubFromContext(ctx)
+	if hub == nil {
+		hub = sentry.CurrentHub().Clone()
+		ctx = sentry.SetHubOnContext(ctx, hub)
+	}
+
 	// Get query params
 	query := r.URL.Query()
 
@@ -56,7 +63,9 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get files in directory
+	span := sentry.StartSpan(ctx, "read_dir")
 	entries, err := os.ReadDir(checkAbsPath)
+	span.Finish()
 
 	if os.IsNotExist(err) {
 		// Is not directory or directory not exists
@@ -108,6 +117,7 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if isDir {
+			span := sentry.StartSpan(ctx, "walk_child_comic_for_directory_thumb")
 			err = filepath.Walk(realFilePath, func(p string, info os.FileInfo, err error) error {
 				if listItem.ThumbPath != "" {
 					return nil
@@ -125,6 +135,7 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 
 				return nil
 			})
+			span.Finish()
 		}
 
 		listData.Items = append(listData.Items, listItem)

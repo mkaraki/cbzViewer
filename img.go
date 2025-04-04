@@ -13,6 +13,13 @@ import (
 )
 
 func imgHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	hub := sentry.GetHubFromContext(ctx)
+	if hub == nil {
+		hub = sentry.CurrentHub().Clone()
+		ctx = sentry.SetHubOnContext(ctx, hub)
+	}
+
 	// Get query params
 	query := r.URL.Query()
 
@@ -53,6 +60,8 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		span := sentry.StartSpan(ctx, "open_zip")
+
 		zipReader, err := zip.OpenReader(checkAbsPath)
 		if err != nil {
 			w.WriteHeader(500)
@@ -61,8 +70,11 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 				sentry.CaptureException(err)
 			}
 			log.Println(err)
+			span.Finish()
 			return
 		}
+
+		span_open_zip_img := span.StartChild("open_zip_img")
 
 		imgData, err := zipReader.Open(queryFile)
 		if os.IsNotExist(err) {
@@ -71,6 +83,8 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			if conf.SentryDsn != "" {
 				sentry.CaptureException(err)
 			}
+			span_open_zip_img.Finish()
+			span.Finish()
 			return
 		} else if err != nil {
 			w.WriteHeader(500)
@@ -79,14 +93,21 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 				sentry.CaptureException(err)
 			}
 			log.Println(err)
+			span_open_zip_img.Finish()
+			span.Finish()
 			return
 		}
+
+		span_open_zip_img.Finish()
+		span.Finish()
 
 		w.Header().Set("Content-Type", contentType)
 		fileCacheSend(checkAbsPath, w)
 
 		if requestExtension == "lep" {
+			span_lepton := sentry.StartSpan(ctx, "lepton_jpeg_decode")
 			err = lepton_jpeg.DecodeLepton(w, imgData)
+			span_lepton.Finish()
 		} else {
 			_, err = io.Copy(w, imgData)
 		}
@@ -101,10 +122,14 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	case "pdf":
+		span := sentry.StartSpan(ctx, "get_pdf_img")
+
+		span_initialize := span.StartChild("init_pdf_read")
 		imagick.Initialize()
 		defer imagick.Terminate()
 		mw := imagick.NewMagickWand()
 		defer mw.Destroy()
+		span_initialize.Finish()
 
 		pageNum, err := strconv.Atoi(queryFile)
 		if err != nil {
@@ -132,6 +157,8 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		span_read_img := span.StartChild("read_pdf_img")
+
 		err = mw.ReadImage(checkAbsPath + "[" + strconv.Itoa(pageNum-1) + "]")
 		if err != nil {
 			w.WriteHeader(500)
@@ -140,8 +167,13 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 				sentry.CaptureException(err)
 			}
 			log.Println(err)
+			span_read_img.Finish()
 			return
 		}
+
+		span_read_img.Finish()
+
+		span_remove_alpha := span.StartChild("remove_alpha_channel")
 
 		err = mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_FLATTEN)
 		if err != nil {
@@ -151,10 +183,15 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 				sentry.CaptureException(err)
 			}
 			log.Println(err)
+			span_remove_alpha.Finish()
 			return
 		}
 
+		span_remove_alpha.Finish()
+
 		if !isThumb {
+			span_resample := span.StartChild("resample_img")
+
 			err = mw.ResampleImage(192, 192, imagick.FILTER_CUBIC, 1.0)
 			if err != nil {
 				w.WriteHeader(500)
@@ -163,8 +200,11 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 					sentry.CaptureException(err)
 				}
 				log.Println(err)
+				span_resample.Finish()
 				return
 			}
+
+			span_resample.Finish()
 
 			err = mw.SetCompressionQuality(80)
 			if err != nil {
@@ -173,9 +213,12 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 					sentry.CaptureException(err)
 				}
 				log.Println(err)
+				span_resample.Finish()
 				return
 			}
 		} else {
+			// Won't resample because load as lower resolution.
+
 			err = mw.SetCompressionQuality(15)
 			if err != nil {
 				w.WriteHeader(500)
@@ -187,6 +230,8 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
+		span_set_image_format := span.StartChild("set_image_format")
+
 		err = mw.SetImageFormat("webp")
 		if err != nil {
 			w.WriteHeader(500)
@@ -195,8 +240,13 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 				sentry.CaptureException(err)
 			}
 			log.Println(err)
+			span_set_image_format.Finish()
 			return
 		}
+
+		span_set_image_format.Finish()
+
+		span_get_image_blob := span.StartChild("get_image_blob")
 
 		imgRaw, err := mw.GetImageBlob()
 		if err != nil {
@@ -206,8 +256,11 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 				sentry.CaptureException(err)
 			}
 			log.Println(err)
+			span_get_image_blob.Finish()
 			return
 		}
+
+		span_get_image_blob.Finish()
 
 		w.Header().Set("Content-Type", "image/webp")
 		fileCacheSend(checkAbsPath, w)
