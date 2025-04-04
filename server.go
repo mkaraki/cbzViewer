@@ -42,7 +42,6 @@ func main() {
 	sentryOptions := sentry.ClientOptions{
 		EnableTracing:    true,
 		TracesSampleRate: 1.0,
-		Debug:            true,
 	}
 	if conf.SentryDsn != "" {
 		sentryOptions.Dsn = conf.SentryDsn
