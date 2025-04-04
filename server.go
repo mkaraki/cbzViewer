@@ -39,26 +39,18 @@ func main() {
 
 	fs := http.FileServer(http.Dir("templates/assets/"))
 
-	if conf.SentryDsn != "" {
-		if err := sentry.Init(sentry.ClientOptions{
-			Dsn:              conf.SentryDsn,
-			TracesSampleRate: 1.0,
-			EnableTracing:    true,
-		}); err != nil {
-			fmt.Printf("Sentry initialization failed: %v\n", err)
-		}
-
-		fmt.Println("Sentry initialized; DSN:", conf.SentryDsn)
-	} else {
-		if err := sentry.Init(sentry.ClientOptions{
-			TracesSampleRate: 1.0,
-			EnableTracing:    true,
-		}); err != nil {
-			fmt.Printf("Sentry initialization failed: %v\n", err)
-		}
-
-		fmt.Println("Sentry initialized; DSN: not set")
+	sentryOptions := sentry.ClientOptions{
+		TracesSampleRate: 1.0,
+		EnableTracing:    true,
 	}
+	if conf.SentryDsn != "" {
+		sentryOptions.Dsn = conf.SentryDsn
+	}
+
+	if err := sentry.Init(sentryOptions); err != nil {
+		fmt.Printf("Sentry initialization failed: %v\n", err)
+	}
+	fmt.Println("Sentry initialized")
 
 	sentry.CaptureMessage("Application started. Check this cause due to unexpected reboot or not.")
 
