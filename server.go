@@ -47,6 +47,8 @@ func main() {
 		}); err != nil {
 			fmt.Printf("Sentry initialization failed: %v\n", err)
 		}
+
+		fmt.Println("Sentry initialized; DSN:", conf.SentryDsn)
 	} else {
 		if err := sentry.Init(sentry.ClientOptions{
 			TracesSampleRate: 1.0,
@@ -54,9 +56,9 @@ func main() {
 		}); err != nil {
 			fmt.Printf("Sentry initialization failed: %v\n", err)
 		}
-	}
 
-	println("Sentry initialized")
+		fmt.Println("Sentry initialized; DSN: not set")
+	}
 
 	sentryHandler := sentryhttp.New(sentryhttp.Options{
 		Repanic: true,
