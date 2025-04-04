@@ -40,8 +40,9 @@ func main() {
 	fs := http.FileServer(http.Dir("templates/assets/"))
 
 	sentryOptions := sentry.ClientOptions{
-		TracesSampleRate: 1.0,
 		EnableTracing:    true,
+		TracesSampleRate: 1.0,
+		Debug:            true,
 	}
 	if conf.SentryDsn != "" {
 		sentryOptions.Dsn = conf.SentryDsn
