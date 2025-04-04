@@ -60,6 +60,8 @@ func main() {
 		fmt.Println("Sentry initialized; DSN: not set")
 	}
 
+	sentry.CaptureMessage("Application started. Check this cause due to unexpected reboot or not.")
+
 	defer sentry.Flush(2 * time.Second)
 
 	sentryHandler := sentryhttp.New(sentryhttp.Options{
@@ -78,6 +80,7 @@ func main() {
 	fmt.Println("Starting server")
 	err = http.ListenAndServe(":8080", nil)
 	if err != nil {
+		sentry.CaptureException(err)
 		log.Fatal(err)
 	}
 }
