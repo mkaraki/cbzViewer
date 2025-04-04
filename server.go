@@ -60,6 +60,8 @@ func main() {
 		fmt.Println("Sentry initialized; DSN: not set")
 	}
 
+	defer sentry.Flush(2 * time.Second)
+
 	sentryHandler := sentryhttp.New(sentryhttp.Options{
 		Repanic: true,
 		Timeout: 10 * time.Second,
