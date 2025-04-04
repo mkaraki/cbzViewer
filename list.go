@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/getsentry/sentry-go"
 	"html/template"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -118,9 +119,16 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 
 		if isDir {
 			span := sentry.StartSpan(ctx, "walk_child_comic_for_directory_thumb")
-			err = filepath.Walk(realFilePath, func(p string, info os.FileInfo, err error) error {
+			span.SetTag("path", filePath)
+			err = filepath.WalkDir(realFilePath, func(p string, info fs.DirEntry, err error) error {
+				if err != nil {
+					sentry.CaptureException(err)
+					log.Println(err)
+					return err
+				}
+
 				if listItem.ThumbPath != "" {
-					return nil
+					return filepath.SkipDir
 				}
 
 				if info.IsDir() {
@@ -131,6 +139,7 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 				if isSupportedComic(fileExt) {
 					p = p[len(realFilePath):]
 					listItem.ThumbPath = path.Join(filePath, p)
+					return filepath.SkipDir
 				}
 
 				return nil
