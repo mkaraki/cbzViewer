@@ -1,0 +1,24 @@
+name: Sentry Release
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install Sentry CLI
+      run: curl -sL https://sentry.io/get-cli/ | sh
+    - name: Set Sentry release
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+      run: |
+        VERSION=$(sentry-cli releases propose-version)
+        sentry-cli releases new -p cbz-viewer $VERSION
+        sentry-cli releases set-commits --auto $VERSION
