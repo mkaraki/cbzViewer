@@ -52,8 +52,6 @@ func main() {
 	}
 	fmt.Println("Sentry initialized")
 
-	sentry.CaptureMessage("Application started. Check this cause due to unexpected reboot or not.")
-
 	defer sentry.Flush(2 * time.Second)
 
 	sentryHandler := sentryhttp.New(sentryhttp.Options{
