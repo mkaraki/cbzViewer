@@ -172,5 +172,5 @@ func fileCacheSend(filePath string, w http.ResponseWriter) {
 }
 
 func sendCacheControl(w http.ResponseWriter) {
-	w.Header().Set("Cache-Control", "max-age=31536000")
+	w.Header().Set("Cache-Control", "public, max-age=31536000")
 }
