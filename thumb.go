@@ -44,6 +44,7 @@ func thumbHandler(w http.ResponseWriter, r *http.Request) {
 		"&thumb=1"
 
 	fileCacheSend(checkAbsPath, w)
+	sendCacheControl(w)
 	w.Header().Set("Location", imgLocation)
 	w.WriteHeader(301)
 }
