@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/getsentry/sentry-go"
 	"log"
 	"net/http"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/getsentry/sentry-go"
 )
 
 func getRealPath(clientPath string, httpResponse http.ResponseWriter) (bool, string, error) {
@@ -168,4 +169,8 @@ func fileCacheSend(filePath string, w http.ResponseWriter) {
 		return
 	}
 	w.Header().Set("Last-Modified", mTimeStr)
+}
+
+func sendCacheControl(w http.ResponseWriter) {
+	w.Header().Set("Cache-Control", "max-age=31536000")
 }

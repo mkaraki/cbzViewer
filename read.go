@@ -4,15 +4,16 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/xml"
-	"github.com/getsentry/sentry-go"
-	"github.com/mattn/natural"
-	"github.com/mkaraki/go_comic_info"
-	"gopkg.in/gographics/imagick.v2/imagick"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/getsentry/sentry-go"
+	"github.com/mattn/natural"
+	"github.com/mkaraki/go_comic_info"
+	"github.com/pdfcpu/pdfcpu/pkg/api"
 )
 
 type PageInfo struct {
@@ -193,25 +194,8 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 
 		span.Finish()
 	case "pdf":
-		span := sentry.StartSpan(ctx, "init_read_pdf")
-		imagick.Initialize()
-		defer imagick.Terminate()
-		mw := imagick.NewMagickWand()
-		defer mw.Destroy()
-		err = mw.SetResolution(50, 50)
-		if err != nil {
-			w.WriteHeader(500)
-			_, _ = w.Write([]byte("Failed to prepare read pdf (Resolution)"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
-			log.Println(err)
-			span.Finish()
-			return
-		}
-
-		span_read := span.StartChild("read_pdf")
-		err = mw.ReadImage(checkAbsPath)
+		span := sentry.StartSpan(ctx, "read_pdf")
+		pageCnt, err := api.PageCountFile(checkAbsPath)
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed when loading pdf file"))
@@ -219,21 +203,19 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 				sentry.CaptureException(err)
 			}
 			log.Println(err)
-			span_read.Finish()
 			span.Finish()
 			return
 		}
-		span_read.Finish()
 
-		pageCnt := mw.GetNumberImages()
-		readInfo.PageCnt = int(pageCnt)
-		for i := uint(1); i <= pageCnt; i++ {
+		span.Finish()
+
+		readInfo.PageCnt = pageCnt
+		for i := 1; i <= pageCnt; i++ {
 			readInfo.Pages = append(readInfo.Pages, PageInfo{
-				PageNo:    int(i),
-				ImageFile: strconv.Itoa(int(i)),
+				PageNo:    i,
+				ImageFile: strconv.Itoa(i),
 			})
 		}
-		span.Finish()
 	default:
 		w.WriteHeader(400)
 		_, _ = w.Write([]byte("Non supported type."))
@@ -241,6 +223,7 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	fileCacheSend(checkAbsPath, w)
+	sendCacheControl(w)
 	err = html.Execute(w, readInfo)
 	if err != nil {
 		w.WriteHeader(500)

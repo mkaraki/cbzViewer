@@ -2,25 +2,27 @@ package main
 
 import (
 	"fmt"
-	"github.com/getsentry/sentry-go"
-	sentryhttp "github.com/getsentry/sentry-go/http"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/getsentry/sentry-go"
+	sentryhttp "github.com/getsentry/sentry-go/http"
 )
 
 var conf *config
 
 func legalHandler(w http.ResponseWriter, r *http.Request) {
-	f, err := os.Open("templates/legal.html")
+	f, err := os.Open("templates/legal.txt")
 	if err != nil {
 		w.WriteHeader(500)
 		log.Println(err)
 		return
 	}
 
+	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusOK)
 	_, err = io.Copy(w, f)
 	if err != nil {
@@ -63,6 +65,10 @@ func main() {
 	http.HandleFunc("/read", sentryHandler.HandleFunc(readHandler))
 	http.HandleFunc("/img", sentryHandler.HandleFunc(imgHandler))
 	http.HandleFunc("/thumb", sentryHandler.HandleFunc(thumbHandler))
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/list", http.StatusMovedPermanently)
+	})
 
 	http.HandleFunc("/legal", sentryHandler.HandleFunc(legalHandler))
 	http.Handle("/assets/", sentryHandler.Handle(http.StripPrefix("/assets/", fs)))

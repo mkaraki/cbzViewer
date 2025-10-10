@@ -2,14 +2,15 @@ package main
 
 import (
 	"archive/zip"
-	"github.com/getsentry/sentry-go"
-	"github.com/mkaraki/cbzViewer/lepton_jpeg"
-	"gopkg.in/gographics/imagick.v2/imagick"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/getsentry/sentry-go"
+	"github.com/mkaraki/cbzViewer/lepton_jpeg"
+	"gopkg.in/gographics/imagick.v3/imagick"
 )
 
 func imgHandler(w http.ResponseWriter, r *http.Request) {
@@ -103,6 +104,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", contentType)
 		fileCacheSend(checkAbsPath, w)
+		sendCacheControl(w)
 
 		if requestExtension == "lep" {
 			span_lepton := sentry.StartSpan(ctx, "lepton_jpeg_decode")
@@ -175,7 +177,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 
 		span_remove_alpha := span.StartChild("remove_alpha_channel")
 
-		err = mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_FLATTEN)
+		err = mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_OPAQUE)
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed to remove alpha channel"))
@@ -192,7 +194,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if !isThumb {
 			span_resample := span.StartChild("resample_img")
 
-			err = mw.ResampleImage(192, 192, imagick.FILTER_CUBIC, 1.0)
+			err = mw.ResampleImage(192.0, 192.0, imagick.FILTER_CUBIC)
 			if err != nil {
 				w.WriteHeader(500)
 				_, _ = w.Write([]byte("Failed to resample image"))
@@ -264,6 +266,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", "image/webp")
 		fileCacheSend(checkAbsPath, w)
+		sendCacheControl(w)
 		w.WriteHeader(200)
 		_, _ = w.Write(imgRaw)
 	default:

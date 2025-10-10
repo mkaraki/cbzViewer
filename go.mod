@@ -1,15 +1,28 @@
 module github.com/mkaraki/cbzViewer
 
-go 1.22.5
+go 1.23.0
+
+toolchain go1.23.4
 
 require (
+	github.com/getsentry/sentry-go v0.35.3
 	github.com/mattn/natural v0.0.0-20150430114811-6b2ca5c8eb9a
 	github.com/mkaraki/go_comic_info v0.1.1
-	gopkg.in/gographics/imagick.v2 v2.7.0
+	github.com/pdfcpu/pdfcpu v0.11.0
+	gopkg.in/gographics/imagick.v3 v3.7.2
 )
 
 require (
-	github.com/getsentry/sentry-go v0.31.1 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	github.com/hhrutter/lzw v1.0.0 // indirect
+	github.com/hhrutter/pkcs7 v0.2.0 // indirect
+	github.com/hhrutter/tiff v1.0.2 // indirect
+	github.com/kr/text v0.2.0 // indirect
+	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
+	golang.org/x/crypto v0.38.0 // indirect
+	golang.org/x/image v0.27.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/text v0.25.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

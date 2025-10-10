@@ -4,3 +4,5 @@ services:
     volumes:
       - ./books:/books:ro
       - ./config.json:/app/config.json:ro
+    ports:
+      - 8080:8080
