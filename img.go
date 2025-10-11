@@ -228,12 +228,10 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 
 		err = mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_OPAQUE)
 		if err != nil {
-			w.WriteHeader(500)
-			_, _ = w.Write([]byte("Failed to remove alpha channel"))
+			// This is skippable process. Skip it on error.
 			sentry.CaptureException(err)
 			log.Println(err)
 			span_remove_alpha.Finish()
-			return
 		}
 
 		span_remove_alpha.Finish()
