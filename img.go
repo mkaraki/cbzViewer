@@ -2,12 +2,16 @@ package main
 
 import (
 	"archive/zip"
+	"bytes"
+	"image"
+	"image/jpeg"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 
+	"github.com/disintegration/imaging"
 	"github.com/getsentry/sentry-go"
 	"github.com/mkaraki/cbzViewer/lepton_jpeg"
 	"gopkg.in/gographics/imagick.v3/imagick"
@@ -34,6 +38,13 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 	queryFile := query.Get("f")
 
 	isThumb := query.Has("thumb")
+	size := -1
+	if isThumb {
+		size = 100
+	}
+	if query.Has("size") {
+		size = int(query.Get("size")[0])
+	}
 
 	// Check is user accessible and what dir/file user want to access.
 	isUserAccessible, checkAbsPath, err := getRealPath(queryPath, w)
@@ -102,17 +113,71 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		span_open_zip_img.Finish()
 		span.Finish()
 
-		w.Header().Set("Content-Type", contentType)
+		if size == -1 {
+			// If original
+			w.Header().Set("Content-Type", contentType)
+		} else {
+			// If resizable
+			// ToDo: Support WebP
+			w.Header().Set("Content-Type", "image/jpeg")
+		}
 		fileCacheSend(checkAbsPath, w)
 		sendCacheControl(w)
 
+		imgBinary := &bytes.Buffer{}
+
 		if requestExtension == "lep" {
-			span_lepton := sentry.StartSpan(ctx, "lepton_jpeg_decode")
-			err = lepton_jpeg.DecodeLepton(w, imgData)
-			span_lepton.Finish()
+			spanLepton := sentry.StartSpan(ctx, "lepton_jpeg_decode")
+			if size == -1 { // Original
+				err = lepton_jpeg.DecodeLepton(w, imgData)
+			} else {
+				err = lepton_jpeg.DecodeLepton(imgBinary, imgData)
+			}
+			spanLepton.Finish()
 		} else {
-			_, err = io.Copy(w, imgData)
+			if size == -1 { // Original
+				_, err = io.Copy(w, imgData)
+			} else {
+				_, err = io.Copy(imgBinary, imgData)
+			}
 		}
+
+		if err != nil {
+			w.WriteHeader(500)
+			_, _ = w.Write([]byte("Unable to export image"))
+			if conf.SentryDsn != "" {
+				sentry.CaptureException(err)
+			}
+			log.Println(err)
+			return
+		}
+
+		if size == -1 {
+			// If original, image data already sent.
+			return
+		}
+
+		// =================================
+		// Resize
+		// =================================
+
+		err = imgData.Close()
+		if err != nil {
+			// This is not fatal error.
+			sentry.CaptureException(err)
+		}
+
+		imgObject, _, err := image.Decode(imgBinary)
+		if err != nil {
+			w.WriteHeader(500)
+			_, _ = w.Write([]byte("Unable to decode image"))
+			sentry.CaptureException(err)
+		}
+		imgBinary.Reset() // Clear memory.
+
+		imgObject = imaging.Resize(imgObject, size, 0, imaging.Lanczos)
+
+		err = jpeg.Encode(w, imgObject, nil)
 
 		if err != nil {
 			w.WriteHeader(500)

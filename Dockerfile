@@ -8,7 +8,7 @@ WORKDIR /lepton_jpeg_rust
 
 RUN cargo build --release --workspace --locked
 
-FROM golang:1.24-trixie AS build
+FROM golang:1.25-trixie AS build
 
 RUN apt-get update -o Acquire::CompressionTypes::Order::=gz && \
     apt-get install -y \
@@ -20,7 +20,7 @@ COPY . /app/
 
 RUN go build -ldflags '-linkmode external -extldflags=-L=.'
 
-FROM debian:trixie
+FROM debian:trixie-slim
 
 RUN apt-get update -o Acquire::CompressionTypes::Order::=gz && \
     apt-get install -y \

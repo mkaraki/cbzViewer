@@ -21,7 +21,14 @@
     <div class="page-img-list-container">
         {{ range .Pages }}
         <div class="page-img-container" id="{{ .PageNo }}">
-            <img class="page" src="img?path={{ $.Path }}&f={{ .ImageFile }}" alt="Page {{ .PageNo }}" loading="lazy" />
+            <img class="page" src="img?path={{ $.Path }}&f={{ .ImageFile }}" alt="Page {{ .PageNo }}" loading="lazy"
+                 srcset="img?path={{ $.Path }}&f={{ .ImageFile }}&size=320 320w,
+                    img?path={{ $.Path }}&f={{ .ImageFile }}&size=640 640w,
+                    img?path={{ $.Path }}&f={{ .ImageFile }}&size=1280 1280w,
+                    img?path={{ $.Path }}&f={{ .ImageFile }}&size=1920 1920w,
+                    img?path={{ $.Path }}&f={{ .ImageFile }}&size=2560 2560w,
+                    img?path={{ $.Path }}&f={{ .ImageFile }}&size=3840 3840w"
+            />
         </div>
         {{ end }}
     </div>
