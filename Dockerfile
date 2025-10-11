@@ -3,7 +3,7 @@ FROM rust:1-trixie AS lepton_jpeg_build
 RUN apt-get update -o Acquire::CompressionTypes::Order::=gz && \
     apt-get install -y git
 
-RUN git clone --depth 1 https://github.com/microsoft/lepton_jpeg_rust.git /lepton_jpeg_rust
+RUN git clone --depth 1 --branch v0.5.3 https://github.com/microsoft/lepton_jpeg_rust.git /lepton_jpeg_rust
 WORKDIR /lepton_jpeg_rust
 
 RUN cargo build --release --workspace --locked
@@ -43,3 +43,4 @@ VOLUME /books
 EXPOSE 8080
 
 ENTRYPOINT ["/app/cbzViewer"]
+
