@@ -6,7 +6,7 @@ require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/getsentry/sentry-go v0.35.3
 	github.com/mattn/natural v0.0.0-20150430114811-6b2ca5c8eb9a
-	github.com/mkaraki/go_comic_info v0.1.1
+	github.com/mkaraki/go_comic_info v0.1.2
 	github.com/pdfcpu/pdfcpu v0.11.0
 	gopkg.in/gographics/imagick.v3 v3.7.2
 )
