@@ -78,9 +78,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed when loading cbz file"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			span.Finish()
 			return
@@ -92,18 +90,14 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if os.IsNotExist(err) {
 			w.WriteHeader(404)
 			_, _ = w.Write([]byte("No such image"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			span_open_zip_img.Finish()
 			span.Finish()
 			return
 		} else if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to read image file"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			span_open_zip_img.Finish()
 			span.Finish()
@@ -145,9 +139,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to export image"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			return
 		}
@@ -182,9 +174,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to export image"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			return
 		}
@@ -202,9 +192,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(400)
 			_, _ = w.Write([]byte("Unable to get page number"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			return
 		}
@@ -217,9 +205,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed when setting resolution"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			return
 		}
@@ -230,9 +216,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed when loading pdf file"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			span_read_img.Finish()
 			return
@@ -246,9 +230,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed to remove alpha channel"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			span_remove_alpha.Finish()
 			return
@@ -263,9 +245,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				w.WriteHeader(500)
 				_, _ = w.Write([]byte("Failed to resample image"))
-				if conf.SentryDsn != "" {
-					sentry.CaptureException(err)
-				}
+				sentry.CaptureException(err)
 				log.Println(err)
 				span_resample.Finish()
 				return
@@ -276,9 +256,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			err = mw.SetCompressionQuality(80)
 			if err != nil {
 				w.WriteHeader(500)
-				if conf.SentryDsn != "" {
-					sentry.CaptureException(err)
-				}
+				sentry.CaptureException(err)
 				log.Println(err)
 				span_resample.Finish()
 				return
@@ -289,9 +267,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			err = mw.SetCompressionQuality(15)
 			if err != nil {
 				w.WriteHeader(500)
-				if conf.SentryDsn != "" {
-					sentry.CaptureException(err)
-				}
+				sentry.CaptureException(err)
 				log.Println(err)
 				return
 			}
@@ -303,9 +279,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to convert image"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			span_set_image_format.Finish()
 			return
@@ -319,9 +293,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to export image"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			span_get_image_blob.Finish()
 			return

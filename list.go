@@ -48,9 +48,7 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 	html, err := template.ParseFiles("templates/list.html")
 	if err != nil {
 		w.WriteHeader(500)
-		if conf.SentryDsn != "" {
-			sentry.CaptureException(err)
-		}
+		sentry.CaptureException(err)
 		log.Println(err)
 		return
 	}
@@ -75,9 +73,7 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		// Unknown error
 		w.WriteHeader(500)
-		if conf.SentryDsn != "" {
-			sentry.CaptureException(err)
-		}
+		sentry.CaptureException(err)
 		log.Println(err)
 		return
 	}
@@ -91,9 +87,7 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 	listData.HasParent, listData.ParentDir, err = getParentDir(checkAbsPath)
 	if err != nil {
 		w.WriteHeader(500)
-		if conf.SentryDsn != "" {
-			sentry.CaptureException(err)
-		}
+		sentry.CaptureException(err)
 		log.Println(err)
 		return
 	}
@@ -153,9 +147,7 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 	err = html.Execute(w, listData)
 	if err != nil {
 		w.WriteHeader(500)
-		if conf.SentryDsn != "" {
-			sentry.CaptureException(err)
-		}
+		sentry.CaptureException(err)
 		log.Println(err)
 		return
 	}
