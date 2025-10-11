@@ -15,7 +15,7 @@ RUN apt-get update -o Acquire::CompressionTypes::Order::=gz && \
     libmagickwand-dev
 
 WORKDIR /app
-COPY --from=lepton_jpeg_build /lepton_jpeg_rust/target/release/liblepton_jpeg.so /app/
+COPY --from=lepton_jpeg_build /lepton_jpeg_rust/target/release/liblepton_jpeg_dll.so /app/liblepton_jpeg.so
 COPY . /app/
 
 RUN go build -ldflags '-linkmode external -extldflags=-L=.'
@@ -31,7 +31,7 @@ RUN apt-get update -o Acquire::CompressionTypes::Order::=gz && \
 
 RUN sed -i '/disable ghostscript format types/,+6d' /etc/ImageMagick-7/policy.xml
     
-COPY --from=lepton_jpeg_build /lepton_jpeg_rust/target/release/liblepton_jpeg.so /usr/lib/
+COPY --from=lepton_jpeg_build /lepton_jpeg_rust/target/release/liblepton_jpeg_dll.so /usr/lib/liblepton_jpeg.so
 RUN ldconfig
 
 WORKDIR /app
