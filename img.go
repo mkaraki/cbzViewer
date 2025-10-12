@@ -81,14 +81,14 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		span_open_zip_img := span.StartChild("open_zip_img")
+		spanOpenZipImg := span.StartChild("open_zip_img")
 
 		imgData, err := zipReader.Open(queryFile)
 		if os.IsNotExist(err) {
 			w.WriteHeader(404)
 			_, _ = w.Write([]byte("No such image"))
 			sentry.CaptureException(err)
-			span_open_zip_img.Finish()
+			spanOpenZipImg.Finish()
 			span.Finish()
 			return
 		} else if err != nil {
@@ -96,12 +96,12 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte("Unable to read image file"))
 			sentry.CaptureException(err)
 			log.Println(err)
-			span_open_zip_img.Finish()
+			spanOpenZipImg.Finish()
 			span.Finish()
 			return
 		}
 
-		span_open_zip_img.Finish()
+		spanOpenZipImg.Finish()
 		span.Finish()
 
 		if size == -1 {
@@ -224,7 +224,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			webpParam.Quality = 90
 		}
 
-		span_read_img := span.StartChild("read_pdf_img")
+		spanReadImg := span.StartChild("read_pdf_img")
 
 		image, err := vips.LoadImageFromFile(checkAbsPath, importParam)
 		if err != nil {
@@ -232,11 +232,11 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte("Failed when loading pdf file"))
 			sentry.CaptureException(err)
 			log.Println(err)
-			span_read_img.Finish()
+			spanReadImg.Finish()
 			return
 		}
 
-		span_read_img.Finish()
+		spanReadImg.Finish()
 
 		imgBytes, _, err := image.ExportWebp(webpParam)
 		if err != nil {

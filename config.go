@@ -16,7 +16,9 @@ func loadConfig() (*config, error) {
 		log.Fatal(err)
 		return nil, err
 	}
-	defer f.Close()
+	defer func(f *os.File) {
+		_ = f.Close()
+	}(f)
 
 	var conf config
 	err = json.NewDecoder(f).Decode(&conf)

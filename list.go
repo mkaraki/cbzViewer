@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/getsentry/sentry-go"
 	"html/template"
 	"io/fs"
 	"log"
@@ -9,6 +8,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+
+	"github.com/getsentry/sentry-go"
 )
 
 type ListItem struct {

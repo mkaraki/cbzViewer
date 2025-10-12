@@ -12,7 +12,7 @@ import (
 
 	"github.com/getsentry/sentry-go"
 	"github.com/mattn/natural"
-	"github.com/mkaraki/go_comic_info"
+	comicinfo "github.com/mkaraki/go_comic_info"
 	"github.com/pdfcpu/pdfcpu/pkg/api"
 )
 
@@ -98,7 +98,7 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		comic_info_span := span.StartChild("read_cbz_comic_info")
+		comicInfoSpan := span.StartChild("read_cbz_comic_info")
 
 		comicInfoFile, err := zipReader.Open("ComicInfo.xml")
 		if comicInfoFile == nil {
@@ -111,13 +111,13 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 				_, _ = w.Write([]byte("Failed when loading cbz file. Unable to fetch images."))
 				sentry.CaptureException(err)
 				log.Println(err)
-				comic_info_span.Finish()
+				comicInfoSpan.Finish()
 				span.Finish()
 				return
 			}
 
 			readInfo.PageCnt = len(readInfo.Pages)
-			comic_info_span.Finish()
+			comicInfoSpan.Finish()
 		} else if err != nil {
 			// On error reading `ComicInfo.xml` file
 
@@ -125,13 +125,13 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte("Unable to read cbz file"))
 			sentry.CaptureException(err)
 			log.Println(err)
-			comic_info_span.Finish()
+			comicInfoSpan.Finish()
 			span.Finish()
 			return
 		} else {
 			// If `ComicInfo.xml` file exists
 
-			comicInfo := comic_info.ComicInfo{}
+			comicInfo := comicinfo.ComicInfo{}
 
 			rawComicInfo := &bytes.Buffer{}
 			_, err = io.Copy(rawComicInfo, comicInfoFile)
@@ -140,7 +140,7 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 				_, _ = w.Write([]byte("Failed to read ComicInfo.xml"))
 				sentry.CaptureException(err)
 				log.Println(err)
-				comic_info_span.Finish()
+				comicInfoSpan.Finish()
 				span.Finish()
 				return
 			}
@@ -151,7 +151,7 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 				_, _ = w.Write([]byte("Failed to parse ComicInfo.xml"))
 				sentry.CaptureException(err)
 				log.Println(err)
-				comic_info_span.Finish()
+				comicInfoSpan.Finish()
 				span.Finish()
 				return
 			}
@@ -167,13 +167,13 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 				_, _ = w.Write([]byte("Failed when loading cbz file. Unable to fetch images."))
 				sentry.CaptureException(err)
 				log.Println(err)
-				comic_info_span.Finish()
+				comicInfoSpan.Finish()
 				span.Finish()
 				return
 			}
 
 			readInfo.PageCnt = len(readInfo.Pages)
-			comic_info_span.Finish()
+			comicInfoSpan.Finish()
 		}
 
 		span.Finish()

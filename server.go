@@ -14,7 +14,7 @@ import (
 
 var conf *config
 
-func legalHandler(w http.ResponseWriter, r *http.Request) {
+func legalHandler(w http.ResponseWriter, _ *http.Request) {
 	f, err := os.Open("templates/legal.txt")
 	if err != nil {
 		w.WriteHeader(500)
