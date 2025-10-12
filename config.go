@@ -7,8 +7,7 @@ import (
 )
 
 type config struct {
-	CbzDir    string `json:"cbzDir"`
-	SentryDsn string `json:"sentryDsn"`
+	CbzDir string `json:"cbzDir"`
 }
 
 func loadConfig() (*config, error) {

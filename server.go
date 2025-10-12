@@ -45,9 +45,6 @@ func main() {
 		EnableTracing:    true,
 		TracesSampleRate: 0.1,
 	}
-	if conf.SentryDsn != "" {
-		sentryOptions.Dsn = conf.SentryDsn
-	}
 
 	if err := sentry.Init(sentryOptions); err != nil {
 		fmt.Printf("Sentry initialization failed: %v\n", err)

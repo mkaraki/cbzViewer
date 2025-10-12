@@ -205,9 +205,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(400)
 			_, _ = w.Write([]byte("Unable to get page number"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			return
 		}
