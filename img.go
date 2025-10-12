@@ -3,18 +3,15 @@ package main
 import (
 	"archive/zip"
 	"bytes"
-	"image"
-	"image/jpeg"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 
-	"github.com/disintegration/imaging"
+	"github.com/davidbyttow/govips/v2/vips"
 	"github.com/getsentry/sentry-go"
 	"github.com/mkaraki/cbzViewer/lepton_jpeg"
-	"gopkg.in/gographics/imagick.v3/imagick"
 )
 
 func imgHandler(w http.ResponseWriter, r *http.Request) {
@@ -78,9 +75,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed when loading cbz file"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			span.Finish()
 			return
@@ -92,18 +87,14 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if os.IsNotExist(err) {
 			w.WriteHeader(404)
 			_, _ = w.Write([]byte("No such image"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			span_open_zip_img.Finish()
 			span.Finish()
 			return
 		} else if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to read image file"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			span_open_zip_img.Finish()
 			span.Finish()
@@ -118,8 +109,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", contentType)
 		} else {
 			// If resizable
-			// ToDo: Support WebP
-			w.Header().Set("Content-Type", "image/jpeg")
+			w.Header().Set("Content-Type", "image/webp")
 		}
 		fileCacheSend(checkAbsPath, w)
 		sendCacheControl(w)
@@ -145,9 +135,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to export image"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			return
 		}
@@ -167,7 +155,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			sentry.CaptureException(err)
 		}
 
-		imgObject, _, err := image.Decode(imgBinary)
+		imgObject, err := vips.NewImageFromReader(imgBinary)
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to decode image"))
@@ -175,28 +163,43 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		imgBinary.Reset() // Clear memory.
 
-		imgObject = imaging.Resize(imgObject, size, 0, imaging.Lanczos)
+		imgResizeRate = float64(size) / float64(imgObject.Width())
+		if imgResizeRate < 1.0 {
+			err = imgObject.Resize(imgResizeRate, vips.KernelLanczos3)
+			if err != nil {
+				// This is continuable error.
+				sentry.CaptureException(err)
+				log.Println(err)
+				return
+			}
+		}
 
-		err = jpeg.Encode(w, imgObject, nil)
+		webpParams := vips.NewWebpExportParams()
+		webpParams.StripMetadata = true
+		if size < 320 {
+			webpParams.Quality = 20
+		} else {
+			webpParams.Quality = 90
+		}
 
+		imgBytes, _, err := imgObject.ExportWebp(webpParams)
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to export image"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			return
 		}
+
+		w.WriteHeader(200)
+		_, err = w.Write(imgBytes)
+		if err != nil {
+			w.WriteHeader(500)
+			_, _ = w.Write([]byte("Unable to export image"))
+			sentry.CaptureException(err)
+		}
 	case "pdf":
 		span := sentry.StartSpan(ctx, "get_pdf_img")
-
-		span_initialize := span.StartChild("init_pdf_read")
-		imagick.Initialize()
-		defer imagick.Terminate()
-		mw := imagick.NewMagickWand()
-		defer mw.Destroy()
-		span_initialize.Finish()
 
 		pageNum, err := strconv.Atoi(queryFile)
 		if err != nil {
@@ -209,30 +212,27 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		importParam := vips.NewImportParams()
+		importParam.Page.Set(pageNum - 1)
+
+		webpParam := vips.NewWebpExportParams()
+		webpParam.StripMetadata = true
+
 		if isThumb {
-			err = mw.SetResolution(50, 50)
+			importParam.Density.Set(50)
+			webpParam.Quality = 20
 		} else {
-			err = mw.SetResolution(350, 350)
-		}
-		if err != nil {
-			w.WriteHeader(500)
-			_, _ = w.Write([]byte("Failed when setting resolution"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
-			log.Println(err)
-			return
+			importParam.Density.Set(350)
+			webpParam.Quality = 90
 		}
 
 		span_read_img := span.StartChild("read_pdf_img")
 
-		err = mw.ReadImage(checkAbsPath + "[" + strconv.Itoa(pageNum-1) + "]")
+		image, err := vips.LoadImageFromFile(checkAbsPath, importParam)
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Failed when loading pdf file"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			sentry.CaptureException(err)
 			log.Println(err)
 			span_read_img.Finish()
 			return
@@ -240,100 +240,25 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 
 		span_read_img.Finish()
 
-		span_remove_alpha := span.StartChild("remove_alpha_channel")
-
-		err = mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_OPAQUE)
+		imgBytes, _, err := image.ExportWebp(webpParam)
 		if err != nil {
 			w.WriteHeader(500)
-			_, _ = w.Write([]byte("Failed to remove alpha channel"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
+			_, _ = w.Write([]byte("Failed when exporting pdf file"))
+			sentry.CaptureException(err)
 			log.Println(err)
-			span_remove_alpha.Finish()
-			return
 		}
-
-		span_remove_alpha.Finish()
-
-		if !isThumb {
-			span_resample := span.StartChild("resample_img")
-
-			err = mw.ResampleImage(192.0, 192.0, imagick.FILTER_CUBIC)
-			if err != nil {
-				w.WriteHeader(500)
-				_, _ = w.Write([]byte("Failed to resample image"))
-				if conf.SentryDsn != "" {
-					sentry.CaptureException(err)
-				}
-				log.Println(err)
-				span_resample.Finish()
-				return
-			}
-
-			span_resample.Finish()
-
-			err = mw.SetCompressionQuality(80)
-			if err != nil {
-				w.WriteHeader(500)
-				if conf.SentryDsn != "" {
-					sentry.CaptureException(err)
-				}
-				log.Println(err)
-				span_resample.Finish()
-				return
-			}
-		} else {
-			// Won't resample because load as lower resolution.
-
-			err = mw.SetCompressionQuality(15)
-			if err != nil {
-				w.WriteHeader(500)
-				if conf.SentryDsn != "" {
-					sentry.CaptureException(err)
-				}
-				log.Println(err)
-				return
-			}
-		}
-
-		span_set_image_format := span.StartChild("set_image_format")
-
-		err = mw.SetImageFormat("webp")
-		if err != nil {
-			w.WriteHeader(500)
-			_, _ = w.Write([]byte("Unable to convert image"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
-			log.Println(err)
-			span_set_image_format.Finish()
-			return
-		}
-
-		span_set_image_format.Finish()
-
-		span_get_image_blob := span.StartChild("get_image_blob")
-
-		imgRaw, err := mw.GetImageBlob()
-		if err != nil {
-			w.WriteHeader(500)
-			_, _ = w.Write([]byte("Unable to export image"))
-			if conf.SentryDsn != "" {
-				sentry.CaptureException(err)
-			}
-			log.Println(err)
-			span_get_image_blob.Finish()
-			return
-		}
-
-		span_get_image_blob.Finish()
 
 		w.Header().Set("Content-Type", "image/webp")
 		fileCacheSend(checkAbsPath, w)
 		sendCacheControl(w)
 		w.WriteHeader(200)
-		_, _ = w.Write(imgRaw)
+		_, err = w.Write(imgBytes)
+		if err != nil {
+			w.WriteHeader(500)
+			_, _ = w.Write([]byte("Failed when exporting pdf file"))
+			sentry.CaptureException(err)
+			log.Println(err)
+		}
 	default:
 		w.WriteHeader(400)
 		_, _ = w.Write([]byte("Non supported type."))

@@ -12,7 +12,7 @@ FROM golang:1.25-trixie AS build
 
 RUN apt-get update -o Acquire::CompressionTypes::Order::=gz && \
     apt-get install -y \
-    libmagickwand-dev
+    libvips-dev
 
 WORKDIR /app
 COPY --from=lepton_jpeg_build /lepton_jpeg_rust/target/release/liblepton_jpeg.so /app/
@@ -24,7 +24,7 @@ FROM debian:trixie-slim
 
 RUN apt-get update -o Acquire::CompressionTypes::Order::=gz && \
     apt-get install -y \
-    libmagickwand-7.q16-10 \
+    libvips42t64 \
     ca-certificates \
     && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
