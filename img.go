@@ -163,7 +163,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		imgBinary.Reset() // Clear memory.
 
-		imgResizeRate = float64(size) / float64(imgObject.Width())
+		imgResizeRate := float64(size) / float64(imgObject.Width())
 		if imgResizeRate < 1.0 {
 			err = imgObject.Resize(imgResizeRate, vips.KernelLanczos3)
 			if err != nil {
