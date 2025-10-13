@@ -64,7 +64,11 @@ func main() {
 	http.HandleFunc("/thumb", sentryHandler.HandleFunc(thumbHandler))
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/list", http.StatusMovedPermanently)
+		if r.URL.Path == "/" {
+			http.Redirect(w, r, "/list", http.StatusMovedPermanently)
+		} else {
+			http.NotFound(w, r);
+		}
 	})
 
 	http.HandleFunc("/legal", sentryHandler.HandleFunc(legalHandler))
