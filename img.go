@@ -69,7 +69,9 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		span := sentry.StartSpan(ctx, "open_zip")
+		span := sentry.StartSpan(ctx, "file.open")
+		span.Description = "(FD) Open zip file"
+		span.SetData("file.path", checkAbsPath)
 
 		zipReader, err := zip.OpenReader(checkAbsPath)
 		if err != nil {
@@ -81,7 +83,10 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		spanOpenZipImg := span.StartChild("open_zip_img")
+		spanOpenZipImg := span.StartChild("file.open")
+		spanOpenZipImg.Description := "Open compressed file in zip file"
+		spanOpenZipImg.SetData("file.path", checkAbsPath)
+		spanOpenZipImg.SetData("file.path.zip.ipath", queryFile)
 
 		imgData, err := zipReader.Open(queryFile)
 		if os.IsNotExist(err) {
@@ -118,6 +123,8 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 
 		if requestExtension == "lep" {
 			spanLepton := sentry.StartSpan(ctx, "lepton_jpeg_decode")
+			spanLepton.SetData("file.path", checkAbsPath)
+			spanLepton.SetData("file.path.zip.ipath", queryFile)
 			if size == -1 { // Original
 				err = lepton_jpeg.DecodeLepton(w, imgData)
 			} else {
@@ -125,11 +132,17 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			spanLepton.Finish()
 		} else {
+			span = sentry.StartSpan(ctx, "file.read")
+			span.SetData("file.path", checkAbsPath)
+			span.SetData("file.path.zip.ipath", queryFile)
+
 			if size == -1 { // Original
 				_, err = io.Copy(w, imgData)
 			} else {
 				_, err = io.Copy(imgBinary, imgData)
 			}
+
+			span.Finish()
 		}
 
 		if err != nil {
@@ -155,17 +168,25 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			sentry.CaptureException(err)
 		}
 
+		span = sentry.StartSpan(ctx, "image.read")
+		span.Description = "Read image data to resize"
+
 		imgObject, err := vips.NewImageFromReader(imgBinary)
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to decode image"))
 			sentry.CaptureException(err)
 		}
+		span.Finish();
 		imgBinary.Reset() // Clear memory.
 
 		imgResizeRate := float64(size) / float64(imgObject.Width())
 		if imgResizeRate < 1.0 {
+			span = sentry.StartSpan(ctx, "image.resize")
+			span.Description = "Resize image to specified size"
+
 			err = imgObject.Resize(imgResizeRate, vips.KernelLanczos3)
+			span.Finish()
 			if err != nil {
 				// This is continuable error.
 				sentry.CaptureException(err)
@@ -182,7 +203,10 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			webpParams.Quality = 90
 		}
 
+		span = sentry.StartSpan(ctx, "image.export")
+		span.Description = "Resize image to specified size"
 		imgBytes, _, err := imgObject.ExportWebp(webpParams)
+		span.Finish()
 		if err != nil {
 			w.WriteHeader(500)
 			_, _ = w.Write([]byte("Unable to export image"))
