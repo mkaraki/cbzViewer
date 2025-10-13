@@ -84,7 +84,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		spanOpenZipImg := span.StartChild("file.open")
-		spanOpenZipImg.Description := "Open compressed file in zip file"
+		spanOpenZipImg.Description = "Open compressed file in zip file"
 		spanOpenZipImg.SetData("file.path", checkAbsPath)
 		spanOpenZipImg.SetData("file.path.zip.ipath", queryFile)
 
