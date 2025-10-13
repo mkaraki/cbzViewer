@@ -15,7 +15,7 @@
     ></script>
     <script>
     Sentry.init({
-        dsn: "{{ .SentryDSN }}"
+        dsn: "{{ .SentryDSN }}",
         integrations: [
             Sentry.browserTracingIntegration(),
         ],
