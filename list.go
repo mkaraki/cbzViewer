@@ -24,6 +24,10 @@ type ListData struct {
 	CurrentDir string
 	HasParent  bool
 	ParentDir  string
+	SentryBaggage string
+	SentryTrace   string
+	SentryDSN     string
+	ServerHost    string
 }
 
 func listHandler(w http.ResponseWriter, r *http.Request) {
@@ -83,6 +87,10 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 		CurrentDir: queryPath,
 		HasParent:  false,
 		ParentDir:  "",
+		SentryBaggage: hub.GetBaggage(),
+		SentryTrace: hub.GetTraceparent(),
+		SentryDSN: os.Getenv("SENTRY_DSN"),
+		ServerHost: r.Host,
 	}
 
 	listData.HasParent, listData.ParentDir, err = getParentDir(checkAbsPath)

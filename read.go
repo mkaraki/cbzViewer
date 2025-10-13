@@ -27,6 +27,10 @@ type ReadInfo struct {
 	Path       string
 	PageCnt    int
 	ParentDir  string
+	SentryBaggage string
+	SentryTrace   string
+	SentryDSN     string
+	ServerHost    string
 }
 
 func readHandler(w http.ResponseWriter, r *http.Request) {
@@ -72,6 +76,10 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 
 	readInfo := ReadInfo{
 		Path: queryPath,
+		SentryBaggage: hub.GetBaggage(),
+		SentryTrace: hub.GetTraceparent(),
+		SentryDSN: os.Getenv("SENTRY_DSN"),
+		ServerHost: r.Host,
 	}
 
 	_, readInfo.ParentDir, err = getParentDir(checkAbsPath)
