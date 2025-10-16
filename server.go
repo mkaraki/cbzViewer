@@ -67,12 +67,12 @@ func main() {
 		if r.URL.Path == "/" {
 			http.Redirect(w, r, "/list", http.StatusMovedPermanently)
 		} else {
-			http.NotFound(w, r);
+			http.NotFound(w, r)
 		}
 	})
 
-	http.HandleFunc("/legal", sentryHandler.HandleFunc(legalHandler))
-	http.Handle("/assets/", sentryHandler.Handle(http.StripPrefix("/assets/", fs)))
+	http.HandleFunc("/legal", legalHandler)
+	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
 
 	fmt.Println("Starting server")
 	err = http.ListenAndServe(":8080", nil)

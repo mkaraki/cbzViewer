@@ -21,6 +21,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 		hub = sentry.CurrentHub().Clone()
 		ctx = sentry.SetHubOnContext(ctx, hub)
 	}
+	sentry.ContinueTrace(hub, r.Header.Get(sentry.SentryTraceHeader), r.Header.Get(sentry.SentryBaggageHeader))
 
 	// Get query params
 	query := r.URL.Query()
@@ -177,7 +178,7 @@ func imgHandler(w http.ResponseWriter, r *http.Request) {
 			_, _ = w.Write([]byte("Unable to decode image"))
 			sentry.CaptureException(err)
 		}
-		span.Finish();
+		span.Finish()
 		imgBinary.Reset() // Clear memory.
 
 		imgResizeRate := float64(size) / float64(imgObject.Width())

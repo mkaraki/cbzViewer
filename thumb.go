@@ -5,9 +5,15 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+
+	"github.com/getsentry/sentry-go"
 )
 
 func thumbHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	hub := sentry.GetHubFromContext(ctx)
+	sentry.ContinueTrace(hub, r.Header.Get(sentry.SentryTraceHeader), r.Header.Get(sentry.SentryBaggageHeader))
+
 	// Get query params
 	query := r.URL.Query()
 

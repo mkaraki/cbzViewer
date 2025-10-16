@@ -3,15 +3,15 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Index of {{ .CurrentDir }}</title>
-    <link rel="stylesheet" href="assets/list.css">
-    <meta name="baggage" content="{{ .SentryBaggage }}"/>
-    <meta name="sentry-trace" content="{{ .SentryTrace }}"/>
+    <link href="assets/list.css" rel="stylesheet">
+    <meta content="{{ .SentryBaggage }}" name="baggage"/>
+    <meta content="{{ .SentryTrace }}" name="sentry-trace"/>
     <script
-        src="https://browser.sentry-cdn.com/10.19.0/bundle.tracing.replay.feedback.min.js"
-        integrity="sha384-92N5u8Kf3n6PjH0F76yRkyEvEF5R0At4k2Ptj7eLJQqdHD3nhhFAezd3HbpbSNo8"
         crossorigin="anonymous"
+        integrity="sha384-92N5u8Kf3n6PjH0F76yRkyEvEF5R0At4k2Ptj7eLJQqdHD3nhhFAezd3HbpbSNo8"
+        src="https://browser.sentry-cdn.com/10.19.0/bundle.tracing.replay.feedback.min.js"
     ></script>
     <script>
     Sentry.init({
@@ -39,13 +39,13 @@
         {{ if .IsDir }}
         <a href="list?path={{ .Path }}">
             {{ if ne .ThumbPath "" }}
-            <img src="thumb?path={{ .ThumbPath }}" alt="{{ .Name }}" class="thumb" loading="lazy"><br />
+            <img alt="{{ .Name }}" class="thumb lazyload" data-src-fetch="thumb?path={{ .ThumbPath }}"><br />
             {{ end }}
             📂 {{ .Name }}/
         </a>
         {{ else }}
         <a href="read?path={{ .Path }}">
-            <img src="thumb?path={{ .Path }}" alt="{{ .Name }}" class="thumb" loading="lazy"><br />
+            <img alt="{{ .Name }}" class="thumb lazyload" data-src-fetch="thumb?path={{ .Path }}"><br />
             {{ .Name }}
         </a>
         {{ end }}
@@ -55,6 +55,8 @@
 
 <hr />
 <a href="legal">Legal info</a>
+<script crossorigin="anonymous" integrity="sha512-q583ppKrCRc7N5O0n2nzUiJ+suUv7Et1JGels4bXOaMFQcamPk9HjdUknZuuFjBNs7tsMuadge5k9RzdmO+1GQ==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js"></script>
+<script src="assets/shared.js"></script>
 </body>
 
 </html>
