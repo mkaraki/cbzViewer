@@ -16,6 +16,10 @@ RUN apt-get update -o Acquire::CompressionTypes::Order::=gz && \
 
 WORKDIR /app
 COPY --from=lepton_jpeg_build /lepton_jpeg_rust/target/release/liblepton_jpeg_dll.so /app/liblepton_jpeg.so
+
+COPY go.mod go.sum /app/
+RUN go mod download
+
 COPY . /app/
 
 RUN go build -ldflags '-linkmode external -extldflags=-L=.'

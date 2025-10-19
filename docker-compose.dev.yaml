@@ -6,3 +6,6 @@ services:
       - ./config.json:/app/config.json:ro
     ports:
       - 8080:8080
+    environment:
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_ENVIRONMENT=dev
