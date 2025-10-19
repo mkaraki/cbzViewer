@@ -38,7 +38,7 @@
     <div class="page-img-list-container">
         {{ range .Pages }}
         <div class="page-img-container" id="{{ .PageNo }}">
-            <img class="page lazyload" data-src-fetch="img?path={{ $.Path }}&f={{ .ImageFile }}" alt="Page {{ .PageNo }}" />
+            <img class="page" src="img?path={{ $.Path }}&f={{ .ImageFile }}" alt="Page {{ .PageNo }}" loading="lazy" />
         </div>
         {{ end }}
     </div>
@@ -59,8 +59,6 @@
 <script>
     const pageCnt = {{ .PageCnt }};
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/lazysizes/5.3.2/lazysizes.min.js" integrity="sha512-q583ppKrCRc7N5O0n2nzUiJ+suUv7Et1JGels4bXOaMFQcamPk9HjdUknZuuFjBNs7tsMuadge5k9RzdmO+1GQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script src="assets/shared.js"></script>
 <script src="assets/read.js"></script>
 </body>
 
