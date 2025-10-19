@@ -39,4 +39,9 @@ window.onload = () => {
                 break;
         }
     }
+    setTimeout(() => {
+        Array.from(document.getElementsByClassName('page')).forEach((v) => {
+            v.loading = 'eager';
+        });
+    }, 0);
 }

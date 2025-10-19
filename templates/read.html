@@ -38,7 +38,11 @@
     <div class="page-img-list-container">
         {{ range .Pages }}
         <div class="page-img-container" id="{{ .PageNo }}">
-            <img class="page" src="img?path={{ $.Path }}&f={{ .ImageFile }}" alt="Page {{ .PageNo }}" loading="lazy" />
+            {{ if eq .PageNo 1 }}
+                <img class="page" src="img?path={{ $.Path }}&f={{ .ImageFile }}" alt="Page {{ .PageNo }}" loading="eager" />
+            {{ else }}
+                <img class="page" src="img?path={{ $.Path }}&f={{ .ImageFile }}" alt="Page {{ .PageNo }}" loading="lazy" />
+            {{ end }}
         </div>
         {{ end }}
     </div>
