@@ -42,12 +42,12 @@ div.page-container>a {
 
 .prev-controller {
     left: 0;
-    right: 50%;
+    right: calc(50% + 30px);
 }
 
 .next-controller {
     right: 0;
-    left: 50%;
+    left: calc(50% + 30px);
 }
 
 header,
