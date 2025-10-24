@@ -7,8 +7,8 @@ import (
 	"html/template"
 	"io"
 	"log"
-	"os"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/getsentry/sentry-go"
@@ -23,11 +23,11 @@ type PageInfo struct {
 }
 
 type ReadInfo struct {
-	ComicTitle string
-	Pages      []PageInfo
-	Path       string
-	PageCnt    int
-	ParentDir  string
+	ComicTitle    string
+	Pages         []PageInfo
+	Path          string
+	PageCnt       int
+	ParentDir     string
 	SentryBaggage string
 	SentryTrace   string
 	SentryDSN     string
@@ -76,11 +76,11 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	readInfo := ReadInfo{
-		Path: queryPath,
+		Path:          queryPath,
 		SentryBaggage: hub.GetBaggage(),
-		SentryTrace: hub.GetTraceparent(),
-		SentryDSN: os.Getenv("SENTRY_DSN"),
-		ServerHost: r.Host,
+		SentryTrace:   hub.GetTraceparent(),
+		SentryDSN:     os.Getenv("SENTRY_DSN"),
+		ServerHost:    r.Host,
 	}
 
 	_, readInfo.ParentDir, err = getParentDir(checkAbsPath)
