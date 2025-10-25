@@ -11,3 +11,25 @@ updates:
       - mkaraki
     schedule:
       interval: "monthly"
+
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/frontend" # Location of package manifests
+    assignees:
+      - mkaraki
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "docker" # See documentation for possible values
+    directory: "/" # Location of package manifests
+    assignees:
+      - mkaraki
+    schedule:
+      interval: "monthly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    assignees:
+      - mkaraki
+

@@ -1,4 +1,3 @@
 {
-  "cbzDir": "/books",
-  "sentryDsn": ""
+  "cbzDir": "/books"
 }

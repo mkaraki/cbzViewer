@@ -3,12 +3,11 @@ package main
 import (
 	"archive/zip"
 	"bytes"
+	"encoding/json"
 	"encoding/xml"
-	"html/template"
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/getsentry/sentry-go"
@@ -18,23 +17,19 @@ import (
 )
 
 type PageInfo struct {
-	PageNo    int
-	ImageFile string
+	PageNo    int    `json:"pageNo"`
+	ImageFile string `json:"imageFile"`
 }
 
 type ReadInfo struct {
-	ComicTitle    string
-	Pages         []PageInfo
-	Path          string
-	PageCnt       int
-	ParentDir     string
-	SentryBaggage string
-	SentryTrace   string
-	SentryDSN     string
-	ServerHost    string
+	ComicTitle string     `json:"comicTitle"`
+	Pages      []PageInfo `json:"pages"`
+	Path       string     `json:"path"`
+	PageCnt    int        `json:"pageCnt"`
+	ParentDir  string     `json:"parentDir"`
 }
 
-func readHandler(w http.ResponseWriter, r *http.Request) {
+func readApiHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	hub := sentry.GetHubFromContext(ctx)
 	if hub == nil {
@@ -66,21 +61,8 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Read template
-	html, err := template.ParseFiles("templates/read.html")
-	if err != nil {
-		w.WriteHeader(500)
-		sentry.CaptureException(err)
-		log.Println(err)
-		return
-	}
-
 	readInfo := ReadInfo{
-		Path:          queryPath,
-		SentryBaggage: hub.GetBaggage(),
-		SentryTrace:   hub.GetTraceparent(),
-		SentryDSN:     os.Getenv("SENTRY_DSN"),
-		ServerHost:    r.Host,
+		Path: queryPath,
 	}
 
 	_, readInfo.ParentDir, err = getParentDir(checkAbsPath)
@@ -215,12 +197,12 @@ func readHandler(w http.ResponseWriter, r *http.Request) {
 
 	fileCacheSend(checkAbsPath, w)
 	sendCacheControl(w)
-	err = html.Execute(w, readInfo)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	err = json.NewEncoder(w).Encode(readInfo)
 	if err != nil {
-		w.WriteHeader(500)
+		println(err)
 		sentry.CaptureException(err)
-		log.Println(err)
-		return
 	}
 }
 

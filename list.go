@@ -1,7 +1,7 @@
 package main
 
 import (
-	"html/template"
+	"encoding/json"
 	"io/fs"
 	"log"
 	"net/http"
@@ -13,24 +13,20 @@ import (
 )
 
 type ListItem struct {
-	Name      string
-	Path      string
-	IsDir     bool
-	ThumbPath string
+	Name      string `json:"name"`
+	Path      string `json:"path"`
+	IsDir     bool   `json:"isDir"`
+	ThumbPath string `json:"thumbPath"`
 }
 
 type ListData struct {
-	Items      []ListItem
-	CurrentDir string
-	HasParent  bool
-	ParentDir  string
-	SentryBaggage string
-	SentryTrace   string
-	SentryDSN     string
-	ServerHost    string
+	Items      []ListItem `json:"items"`
+	CurrentDir string     `json:"currentDir"`
+	HasParent  bool       `json:"hasParent"`
+	ParentDir  string     `json:"parentDir"`
 }
 
-func listHandler(w http.ResponseWriter, r *http.Request) {
+func listApiHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	hub := sentry.GetHubFromContext(ctx)
 	if hub == nil {
@@ -48,15 +44,6 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 
 	// read `path` params
 	queryPath := query.Get("path")
-
-	// Read template
-	html, err := template.ParseFiles("templates/list.html")
-	if err != nil {
-		w.WriteHeader(500)
-		sentry.CaptureException(err)
-		log.Println(err)
-		return
-	}
 
 	// Check is user accessible and what dir/file user want to access.
 	isUserAccessible, checkAbsPath, err := getRealPath(queryPath, w)
@@ -87,10 +74,6 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 		CurrentDir: queryPath,
 		HasParent:  false,
 		ParentDir:  "",
-		SentryBaggage: hub.GetBaggage(),
-		SentryTrace: hub.GetTraceparent(),
-		SentryDSN: os.Getenv("SENTRY_DSN"),
-		ServerHost: r.Host,
 	}
 
 	listData.HasParent, listData.ParentDir, err = getParentDir(checkAbsPath)
@@ -148,16 +131,18 @@ func listHandler(w http.ResponseWriter, r *http.Request) {
 				return nil
 			})
 			span.Finish()
+		} else {
+			listItem.ThumbPath = listItem.Path
 		}
 
 		listData.Items = append(listData.Items, listItem)
 	}
 
-	err = html.Execute(w, listData)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	err = json.NewEncoder(w).Encode(listData)
 	if err != nil {
-		w.WriteHeader(500)
+		println(err)
 		sentry.CaptureException(err)
-		log.Println(err)
-		return
 	}
 }

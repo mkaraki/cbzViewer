@@ -16,9 +16,13 @@ gocredits -skip-missing -w
 > Do not remove `CREDITS.2`.
 > This contains some library which does not contain license info.
 
+> [!NOTE]
+> Write all frontend project's dependency to `CREDITS.3`
+
 And then copy that info to `legal.txt`.
 
 ```bash
-cat CREDITS > templates/legal.txt
-cat CREDITS.2 >> templates/legal.txt
+cat CREDITS > frontend/public/legal.txt
+cat CREDITS.2 >> frontend/public/legal.txt
+cat CREDITS.3 >> frontend/public/legal.txt
 ```

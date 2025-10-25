@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <title>cbzViewer</title>
+    <meta content="{{ .SentryBaggage }}" name="baggage"/>
+    <meta content="{{ .SentryTrace }}" name="sentry-trace"/>
+  </head>
+  <body data-sentry-dsn="{{ .SentryDsn }}" data-server-host="{{ .ServerHost }}">
+    <div id="app"></div>
+    <script src="/src/main.ts" type="module"></script>
+  </body>
+</html>

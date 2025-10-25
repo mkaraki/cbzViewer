@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
@@ -15,7 +16,7 @@ import (
 var conf *config
 
 func legalHandler(w http.ResponseWriter, _ *http.Request) {
-	f, err := os.Open("templates/legal.txt")
+	f, err := os.Open("dist/legal.txt")
 	if err != nil {
 		w.WriteHeader(500)
 		log.Println(err)
@@ -32,6 +33,13 @@ func legalHandler(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
+type vueInitialData struct {
+	SentryBaggage string
+	SentryTrace   string
+	SentryDsn     string
+	ServerHost    string
+}
+
 func main() {
 	var err error
 	conf, err = loadConfig()
@@ -39,7 +47,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fs := http.FileServer(http.Dir("templates/assets/"))
+	fs := http.FileServer(http.Dir("dist/assets/"))
 
 	sentryOptions := sentry.ClientOptions{
 		EnableTracing:    true,
@@ -58,18 +66,49 @@ func main() {
 		Timeout: 10 * time.Second,
 	})
 
-	http.HandleFunc("/list", sentryHandler.HandleFunc(listHandler))
-	http.HandleFunc("/read", sentryHandler.HandleFunc(readHandler))
-	http.HandleFunc("/img", sentryHandler.HandleFunc(imgHandler))
-	http.HandleFunc("/thumb", sentryHandler.HandleFunc(thumbHandler))
+	http.HandleFunc("/api/list", sentryHandler.HandleFunc(listApiHandler))
+	http.HandleFunc("/api/read", sentryHandler.HandleFunc(readApiHandler))
+	http.HandleFunc("/api/img", sentryHandler.HandleFunc(imgHandler))
+	http.HandleFunc("/api/thumb", sentryHandler.HandleFunc(thumbHandler))
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path == "/" {
-			http.Redirect(w, r, "/list", http.StatusMovedPermanently)
-		} else {
-			http.NotFound(w, r)
+	http.HandleFunc("/", sentryHandler.HandleFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		hub := sentry.GetHubFromContext(ctx)
+		if hub == nil {
+			hub = sentry.CurrentHub().Clone()
+			ctx = sentry.SetHubOnContext(ctx, hub)
 		}
-	})
+
+		if r.URL.Path == "/favicon.ico" || r.URL.Path == "/robots.txt" {
+			http.NotFound(w, r)
+		} else {
+			html, err := template.ParseFiles("dist/index.html")
+			if err != nil {
+				sentry.CaptureException(err)
+				log.Println(err)
+				w.WriteHeader(500)
+				_, err = w.Write([]byte("Couldn't prepare frontend HTML."))
+				if err != nil {
+					log.Println(err)
+					return
+				}
+				return
+			}
+			data := vueInitialData{
+				SentryBaggage: hub.GetBaggage(),
+				SentryTrace:   hub.GetTraceparent(),
+				ServerHost:    r.Host,
+				SentryDsn:     os.Getenv("SENTRY_DSN"),
+			}
+
+			err = html.Execute(w, data)
+			if err != nil {
+				w.WriteHeader(500)
+				sentry.CaptureException(err)
+				log.Println(err)
+			}
+		}
+	}))
 
 	http.HandleFunc("/legal", legalHandler)
 	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
