@@ -4,7 +4,7 @@ go 1.25.2
 
 require (
 	github.com/davidbyttow/govips/v2 v2.16.0
-	github.com/getsentry/sentry-go v0.35.3
+	github.com/getsentry/sentry-go v0.36.1
 	github.com/mattn/natural v0.0.0-20150430114811-6b2ca5c8eb9a
 	github.com/mkaraki/go_comic_info v0.1.2
 	github.com/pdfcpu/pdfcpu v0.11.0
