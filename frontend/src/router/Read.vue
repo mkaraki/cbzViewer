@@ -27,6 +27,13 @@ onBeforeMount(() => {
       .then(v => {
         data.value = v;
         state.value = 2;
+
+        setTimeout(() => {
+          console.trace("Changing images to eager: ", pages.value);
+          pages.value?.forEach((v: Element) => {
+            (v as HTMLImageElement).loading = 'eager';
+          });
+        }, 0);
       })
       .catch(e => {
         console.error(e);
@@ -35,7 +42,6 @@ onBeforeMount(() => {
 })
 
 onMounted(() => {
-
   document.onkeydown = (e) => {
     switch(e.key)
     {
@@ -52,14 +58,9 @@ onMounted(() => {
         break;
     }
   }
-
-  setTimeout(() => {
-    Array.from(document.getElementsByClassName('page')).forEach((v: Element) => {
-      (v as HTMLImageElement).loading = 'eager';
-    });
-  }, 0);
 });
 
+const pages = useTemplateRef('pages')
 const pgNum = useTemplateRef('pgNum')
 
 const getPage = () => parseInt(pgNum.value?.innerText ?? '1');
@@ -106,7 +107,8 @@ const pageSelect = () => {
     <div class="page-container">
       <div class="page-img-list-container">
         <div v-for="page in data['pages']" :id="page['pageNo']" :key="page['pageNo']" class="page-img-container">
-          <img :alt="`Image of page ${page['pageNo']}`" :loading="( page['pageNo'] === 1 ? 'eager' : 'lazy' )"
+          <img ref="pages" :alt="`Image of page ${page['pageNo']}`"
+               :loading="( page['pageNo'] === 1 ? 'eager' : 'lazy' )"
                :src="`/api/img?path=${ data['path'] }&f=${ page['imageFile'] }`" class="page" />
         </div>
       </div>
