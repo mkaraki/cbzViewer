@@ -45,20 +45,33 @@ onMounted(() => {
   document.onkeydown = (e) => {
     switch(e.key)
     {
-      case 'ArrowLeft':
-      case 'ArrowUp':
       case 'PageUp':
+      case 'ArrowUp':
         chPageDec();
         break;
 
-      case 'ArrowRight':
       case 'ArrowDown':
       case 'PageDown':
         chPageInc();
         break;
+
+      case 'ArrowLeft':
+        leftHandler();
+        break;
+
+      case 'ArrowRight':
+        rightHandler();
+        break;
     }
   }
+
+  const lastIsRtL = localStorage.getItem('isRtL')
+  if (lastIsRtL !== null) {
+    isRtL.value = lastIsRtL === 'true';
+  }
 });
+
+const isRtL = ref(false);
 
 const pages = useTemplateRef('pages')
 const pgNum = useTemplateRef('pgNum')
@@ -69,6 +82,28 @@ const setPage = (page: Number) => {
     pgNum.value.innerText = page.toString();
   }
 };
+
+const rtlSwitch = () => {
+  isRtL.value = !isRtL.value;
+
+  localStorage.setItem('isRtL', isRtL.value ? 'true' : 'false');
+}
+
+const rightHandler = () => {
+  if (isRtL.value) {
+    chPageDec();
+  } else {
+    chPageInc();
+  }
+}
+
+const leftHandler = () => {
+  if (isRtL.value) {
+    chPageInc();
+  } else {
+    chPageDec();
+  }
+}
 
 const chPageDec = () => {
   const page = getPage();
@@ -112,18 +147,19 @@ const pageSelect = () => {
                :src="`/api/img?path=${ data['path'] }&f=${ page['imageFile'] }`" class="page" />
         </div>
       </div>
-      <a class="prev-controller" href="javascript:void(0)" v-on:click="chPageDec()"></a>
-      <a class="next-controller" href="javascript:void(0)" v-on:click="chPageInc()"></a>
+      <a class="prev-controller" href="javascript:void(0)" v-on:click="leftHandler()"></a>
+      <a class="next-controller" href="javascript:void(0)" v-on:click="rightHandler()"></a>
     </div>
     <footer>
       <div>
-        <a href="javascript:void(0)" v-on:click="chPageDec()">Prev</a>
+        <a href="javascript:void(0)" v-on:click="leftHandler()">{{ isRtL ? 'Next' : 'Prev' }}</a>
       </div>
       <div>
         <a ref="pgNum" href="javascript:void(0)" v-on:click="pageSelect()">1</a> / {{ data['pageCnt'] }}
+        <a href="javascript:void(0)" v-on:click="rtlSwitch()">{{ ( isRtL ? 'RtL' : 'LtR' ) }}</a>
       </div>
       <div>
-        <a href="javascript:void(0)" v-on:click="chPageInc()">Next</a>
+        <a href="javascript:void(0)" v-on:click="rightHandler()">{{ isRtL ? 'Prev' : 'Next' }}</a>
       </div>
     </footer>
   </template>
