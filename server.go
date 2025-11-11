@@ -70,6 +70,7 @@ func main() {
 	http.HandleFunc("/api/read", sentryHandler.HandleFunc(readApiHandler))
 	http.HandleFunc("/api/img", sentryHandler.HandleFunc(imgHandler))
 	http.HandleFunc("/api/thumb", sentryHandler.HandleFunc(thumbHandler))
+	http.HandleFunc("/api/thumb_dir", sentryHandler.HandleFunc(dirThumbHandler))
 
 	http.HandleFunc("/", sentryHandler.HandleFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()

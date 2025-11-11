@@ -60,12 +60,12 @@ watch(() => props.path, () => {
           <div v-for="item in data['items']" :key="item.path" class="item">
             <template v-if="item['isDir']">
               <router-link :to="`/list?path=${ encodeURIComponent(item['path']) }`">
-                <img :alt="`Thumbnail of ${ item['name'] }`" :src="`/api/thumb?path=${ encodeURIComponent(item['thumbPath'])}`" class="thumb">
+                <img :alt="`Thumbnail of ${ item['name'] }`" :src="`/api/thumb_dir?path=${ encodeURIComponent(item['path'])}`" class="thumb" loading="lazy">
               </router-link>
             </template>
             <template v-else>
               <router-link :to="`/read?path=${ encodeURIComponent(item['path']) }`">
-                <img :alt="`Thumbnail of ${ item['name'] }`" :src="`/api/thumb?path=${ encodeURIComponent(item['thumbPath'])}`" class="thumb">
+                <img :alt="`Thumbnail of ${ item['name'] }`" :src="`/api/thumb?path=${ encodeURIComponent(item['path'])}`" class="thumb" loading="lazy">
               </router-link>
             </template>
             <div class="card-body">
