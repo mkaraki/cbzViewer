@@ -29,6 +29,13 @@ onBeforeMount(() => {
         state.value = 2;
 
         setTimeout(() => {
+          let pageStr: RegExpMatchArray|null = location.hash.match(/^#(\d+)$/);
+          if (pageStr !== null && typeof pageStr[1] === 'string') {
+            console.trace('Trying to set page:', pageStr[1]);
+            const page = parseInt(pageStr[1]);
+            setPage(page);
+          }
+
           console.trace("Changing images to eager: ", pages.value);
           pages.value?.forEach((v: Element) => {
             (v as HTMLImageElement).loading = 'eager';
@@ -81,6 +88,8 @@ const setPage = (page: Number) => {
   if (pgNum.value !== null) {
     pgNum.value.innerText = page.toString();
   }
+  document.getElementById((page).toString())?.scrollIntoView();
+  window.history.replaceState({}, '', `#${page}`);
 };
 
 const rtlSwitch = () => {
@@ -109,7 +118,6 @@ const chPageDec = () => {
   const page = getPage();
   if (page <= 1)
     return;
-  document.getElementById((page - 1).toString())?.scrollIntoView();
   setPage(page - 1);
 }
 
@@ -117,14 +125,12 @@ const chPageInc = () => {
   const page = getPage();
   if (page >= data.value['pageCnt'])
     return;
-  document.getElementById((page + 1).toString())?.scrollIntoView();
   setPage(page + 1);
 }
 
 const pageSelect = () => {
   const pageStr = getPage().toString();
   const page = parseInt(prompt("Page?", pageStr) ?? pageStr);
-  document.getElementById((page).toString())?.scrollIntoView();
   setPage(page);
 }
 </script>
