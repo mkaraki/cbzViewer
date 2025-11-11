@@ -2,9 +2,14 @@ package main
 
 import (
 	"archive/zip"
+	"io/fs"
 	"log"
 	"net/http"
 	"net/url"
+	"path"
+	"path/filepath"
+
+	"github.com/getsentry/sentry-go"
 )
 
 func thumbHandler(w http.ResponseWriter, r *http.Request) {
@@ -78,4 +83,70 @@ func getFirstPageName(comicFilePath string) string {
 		log.Println("unknown comic format")
 		return ""
 	}
+}
+
+func dirThumbHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	hub := sentry.GetHubFromContext(ctx)
+	if hub == nil {
+		hub = sentry.CurrentHub().Clone()
+		ctx = sentry.SetHubOnContext(ctx, hub)
+	}
+
+	// Get query params
+	query := r.URL.Query()
+
+	// If there are no `path` query. add `/` for it.
+	if !query.Has("path") {
+		query.Set("path", "/")
+	}
+
+	// read `path` params
+	queryPath := query.Get("path")
+
+	// Check is user accessible and what dir/file user want to access.
+	isUserAccessible, checkAbsPath, err := getRealPath(queryPath, w)
+
+	if !isUserAccessible || err != nil {
+		// HTTP response is already returned by getRealPath
+		return
+	}
+
+	// Get files in directory
+	thumbPath := ""
+	span := sentry.StartSpan(ctx, "dir.walk")
+	span.Name = "Walk directory to get item for thumb"
+	span.SetTag("path", checkAbsPath)
+	err = filepath.WalkDir(checkAbsPath, func(p string, info fs.DirEntry, err error) error {
+		if err != nil {
+			sentry.CaptureException(err)
+			log.Println(err)
+			return err
+		}
+
+		if thumbPath != "" {
+			return filepath.SkipDir
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		fileExt := getExtensionFromFilePath(info.Name())
+		if isSupportedComic(fileExt) {
+			p = p[len(checkAbsPath):]
+			thumbPath = path.Join(queryPath, p)
+			return filepath.SkipDir
+		}
+
+		return nil
+	})
+	span.Finish()
+
+	thumbLocation := "thumb?path=" + url.QueryEscape(thumbPath)
+
+	fileCacheSend(checkAbsPath, w)
+	sendCacheControl(w)
+	w.Header().Set("Location", thumbLocation)
+	w.WriteHeader(301)
 }
