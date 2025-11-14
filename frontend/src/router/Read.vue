@@ -161,7 +161,7 @@ const pageSelect = () => {
         <a href="javascript:void(0)" v-on:click="leftHandler()">{{ isRtL ? 'Next' : 'Prev' }}</a>
       </div>
       <div>
-        <a ref="pgNum" href="javascript:void(0)" v-on:click="pageSelect()">1</a> / {{ data['pageCnt'] }}
+        <a id="pgNum" ref="pgNum" href="javascript:void(0)" v-on:click="pageSelect()">1</a> / {{ data['pageCnt'] }}
         <a href="javascript:void(0)" v-on:click="rtlSwitch()">{{ ( isRtL ? 'RtL' : 'LtR' ) }}</a>
       </div>
       <div>
