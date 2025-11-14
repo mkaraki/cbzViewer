@@ -1,0 +1,36 @@
+name: E2E Test
+
+on:
+  push: {}
+  pull_request: {}
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Set up Docker Compose
+        uses: docker/setup-compose-action@v1
+        with:
+          version: latest
+
+      - name: Start dev compose
+        run: docker compose up --wait --build
+
+      - name: bun install
+        run: bun install
+        working-directory: frontend
+
+      - name: Cypress run
+        run: bun cypress run
+        working-directory: frontend
