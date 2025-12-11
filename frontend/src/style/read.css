@@ -1,16 +1,10 @@
 html,
 body,
-#app{
+#app {
     height: 100%;
     width: 100%;
     margin: 0;
     padding: 0;
-}
-
-img.page {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
 }
 
 div.page-img-container {
@@ -19,6 +13,26 @@ div.page-img-container {
     display: flex;
     justify-content: center;
     align-items: center;
+
+    >img.single-page {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    >img.double-page {
+        width: 50%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    >img.double-page:nth-child(1) {
+        text-align: right;
+    }
+
+    >img.double-page:nth-child(2) {
+        text-align: left;
+    }
 }
 
 div.page-img-list-container {

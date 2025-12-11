@@ -34,6 +34,25 @@ onBeforeMount(() => {
             console.trace('Trying to set page:', pageStr[1]);
             const page = parseInt(pageStr[1]);
             setPage(page);
+          } else {
+            setPage(1);
+          }
+
+          {
+            const headElem = document.getElementsByTagName('head')[0]
+            for (let i = 0; i < data.value['pages'].length; i++) {
+              const page = data.value['pages'][i]
+              const link = document.createElement('link')
+              link.rel = 'preload'
+              link.as = 'image'
+              if (i == 0) {
+                link.fetchPriority = 'high';
+              } else if (i > 4) {
+                link.fetchPriority = 'low';
+              }
+              link.href = `/api/img?path=${encodeURIComponent(data.value['path'])}&f=${encodeURIComponent(page['imageFile'])}`
+              headElem.appendChild(link)
+            }
           }
 
           console.trace("Changing images to eager: ", pages.value);
@@ -76,20 +95,35 @@ onMounted(() => {
   if (lastIsRtL !== null) {
     isRtL.value = lastIsRtL === 'true';
   }
+
+  const lastPageMode = localStorage.getItem('pageMode')
+  if (lastPageMode !== null) {
+    pageMode.value = lastPageMode;
+  }
 });
 
 const isRtL = ref(false);
 
 const pages = useTemplateRef('pages')
-const pgNum = useTemplateRef('pgNum')
 
-const getPage = () => parseInt(pgNum.value?.innerText ?? '1');
+const pageNumber = ref(1);
+
+const showingPageIds = ref([-1]);
+const showingPages = ref([null]);
+
+const getPage = () => pageNumber.value;
 const setPage = (page: Number) => {
-  if (pgNum.value !== null) {
-    pgNum.value.innerText = page.toString();
+  pageNumber.value = page;
+  window.history.replaceState({}, '', `#${pageNumber.value}`);
+  showingPageIds.value = getToShowImageRealNo(page);
+  for (let i = 0; i < showingPageIds.value.length; i++) {
+    showingPages.value[i] = data.value['pages']?.[showingPageIds.value[i] - 1];
   }
-  document.getElementById((page).toString())?.scrollIntoView();
-  window.history.replaceState({}, '', `#${page}`);
+  console.debug(
+    page,
+    showingPageIds.value,
+    showingPages.value,
+  );
 };
 
 const rtlSwitch = () => {
@@ -114,24 +148,118 @@ const leftHandler = () => {
   }
 }
 
+const getPageIncrementAmount = () => {
+  switch (pageMode.value) {
+    case 'single':
+    default:
+      return 1;
+    case 'double':
+      return 2;
+    case 'double-except-first':
+      if (getPage() === 1) {
+        return 1;
+      }
+      return 2;
+  }
+}
+
+const getPageDecrementAmount = () => {
+  switch (pageMode.value) {
+    case 'single':
+    default:
+      return 1;
+    case 'double':
+      return 2;
+    case 'double-except-first':
+      if (getPage() === 2) {
+        return 1;
+      }
+      return 2;
+  }
+}
+
 const chPageDec = () => {
   const page = getPage();
   if (page <= 1)
     return;
-  setPage(page - 1);
+  setPage(page - getPageDecrementAmount());
 }
 
 const chPageInc = () => {
   const page = getPage();
   if (page >= data.value['pageCnt'])
     return;
-  setPage(page + 1);
+  setPage(page + getPageIncrementAmount());
 }
 
 const pageSelect = () => {
   const pageStr = getPage().toString();
   const page = parseInt(prompt("Page?", pageStr) ?? pageStr);
   setPage(page);
+}
+
+const pageMode = ref('single');
+
+const pageModeSwitch = () => {
+  switch (pageMode.value) {
+    case 'single':
+      pageMode.value = 'double';
+      break;
+    case 'double':
+      pageMode.value = 'double-except-first';
+      break;
+    case 'double-except-first':
+      pageMode.value = 'single';
+      break;
+    default:
+      pageMode.value = 'single';
+      break;
+  }
+
+  switch (pageMode.value) {
+    case 'double':
+      if (getPage() % 2 === 1) {
+        setPage(getPage() + 1);
+      }
+      break;
+    case 'double-except-first':
+      if (getPage() % 2 === 0 && getPage() !== 1) {
+        setPage(getPage() + 1);
+      }
+      break;
+  }
+
+  localStorage.setItem('pageMode', pageMode.value);
+}
+
+const getPageAmount = (): number => {
+  switch (pageMode.value) {
+    case 'single':
+    default:
+      return 1;
+    case 'double':
+      return 2;
+    case 'double-except-first':
+      return 2;
+  }
+}
+
+const getToShowImageRealNo = (currentPage: number): Array<number> => {
+  const mode = pageMode.value;
+  switch (mode) {
+    case 'single':
+    default:
+      return [currentPage];
+    case 'double': {
+      return [currentPage, currentPage + 1];
+    }
+    case 'double-except-first': {
+      if (currentPage === 1) {
+        return [-1, 1];
+      }
+      return [currentPage, currentPage + 1];
+    }
+  }
 }
 </script>
 
@@ -147,10 +275,20 @@ const pageSelect = () => {
     </header>
     <div class="page-container">
       <div class="page-img-list-container">
-        <div v-for="page in data['pages']" :id="page['pageNo']" :key="page['pageNo']" class="page-img-container">
-          <img ref="pages" :alt="`Image of page ${page['pageNo']}`"
-               :loading="( page['pageNo'] === 1 ? 'eager' : 'lazy' )"
-               :src="`/api/img?path=${ data['path'] }&f=${ page['imageFile'] }`" class="page" />
+        <div class="page-img-container">
+          <img v-if="getPageAmount() === 1" class="single-page"
+            :src="`/api/img?path=${ data['path'] }&f=${ showingPages?.[0]?.['imageFile'] }`"
+          />
+          <template v-else-if="getPageAmount() === 2">
+            <template v-if="!isRtL">
+              <img class="double-page" :src="`/api/img?path=${ data['path'] }&f=${ showingPages?.[0]?.['imageFile'] }`" />
+              <img class="double-page" :src="`/api/img?path=${ data['path'] }&f=${ showingPages?.[1]?.['imageFile'] }`" />
+            </template>
+            <template v-else-if="isRtL">
+              <img class="double-page" :src="`/api/img?path=${ data['path'] }&f=${ showingPages?.[1]?.['imageFile'] }`" />
+              <img class="double-page" :src="`/api/img?path=${ data['path'] }&f=${ showingPages?.[0]?.['imageFile'] }`" />
+            </template>
+          </template>
         </div>
       </div>
       <a class="prev-controller" href="javascript:void(0)" v-on:click="leftHandler()"></a>
@@ -161,8 +299,9 @@ const pageSelect = () => {
         <a href="javascript:void(0)" v-on:click="leftHandler()">{{ isRtL ? 'Next' : 'Prev' }}</a>
       </div>
       <div>
-        <a ref="pgNum" href="javascript:void(0)" v-on:click="pageSelect()">1</a> / {{ data['pageCnt'] }}
-        <a href="javascript:void(0)" v-on:click="rtlSwitch()">{{ ( isRtL ? 'RtL' : 'LtR' ) }}</a>
+        <a id="pgNum" href="javascript:void(0)" v-on:click="pageSelect()">{{ pageNumber }}</a> / {{ data['pageCnt'] }}
+        <a href="javascript:void(0)" v-on:click="rtlSwitch()">{{ ( isRtL ? 'RtL' : 'LtR' ) }}</a> |
+        <a href="javascript:void(0)" v-on:click="pageModeSwitch()">{{ pageMode }}</a>
       </div>
       <div>
         <a href="javascript:void(0)" v-on:click="rightHandler()">{{ isRtL ? 'Prev' : 'Next' }}</a>
