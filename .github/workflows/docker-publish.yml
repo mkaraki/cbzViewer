@@ -19,7 +19,7 @@ env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
-
+  DOCKER_IMAGE_NAME: mkaraki1111/cbzviewer
 
 jobs:
   build:
@@ -54,13 +54,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # You can skip this step if Docker Hub is your registry
+      # and you already authenticated before
+      - name: Authenticate to Docker
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PAT }}
+
       # Extract metadata (tags, labels) for Docker
       # https://github.com/docker/metadata-action
       - name: Extract Docker metadata
         id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5.10.0
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            ${{ env.DOCKER_IMAGE_NAME }}
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
@@ -82,14 +92,6 @@ jobs:
             SENTRY_ORG=${{ secrets.SENTRY_ORG }}
             SENTRY_PROJECT=cbz-viewer
             SENTRY_URL=${{ secrets.SENTRY_URL_SELF_HOSTED }}
-      
-      # You can skip this step if Docker Hub is your registry
-      # and you already authenticated before
-      - name: Authenticate to Docker
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PAT }}
 
       - name: Docker Scout (PR)
         id: docker-scout
@@ -97,7 +99,7 @@ jobs:
         uses: docker/scout-action@f8c776824083494ab0d56b8105ba2ca85c86e4de # v1.18.2
         with:
           command: compare,cves,recommendations,environment
-          image: local://${{ steps.meta.outputs.tags }}
+          image: local://${{ steps.meta.outputs.tags[0] }}
           to: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.base_ref }}
           ignore-unchanged: true
           only-severities: critical,high
@@ -112,7 +114,7 @@ jobs:
         uses: docker/scout-action@f8c776824083494ab0d56b8105ba2ca85c86e4de # v1.18.2
         with:
           command: cves,environment
-          image: ${{ steps.meta.outputs.tags }}
+          image: ${{ steps.meta.outputs.tags[0] }}
           sarif-file: sarif.output.json
           organization: mkaraki1111
           environment: prod
