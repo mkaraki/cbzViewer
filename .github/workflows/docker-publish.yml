@@ -96,13 +96,14 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         uses: docker/scout-action@f8c776824083494ab0d56b8105ba2ca85c86e4de # v1.18.2
         with:
-          command: compare,cves,recommendations
+          command: compare,cves,recommendations,environment
           image: local://${{ steps.meta.outputs.tags }}
           to: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.base_ref }}
           ignore-unchanged: true
           only-severities: critical,high
           github-token: ${{ secrets.GITHUB_TOKEN }}
           organization: mkaraki1111
+          environment: prod
           keep-previous-comments: true
 
       - name: Analyze for critical and high CVEs
@@ -110,9 +111,11 @@ jobs:
         if: ${{ github.event_name != 'pull_request_target' }}
         uses: docker/scout-action@f8c776824083494ab0d56b8105ba2ca85c86e4de # v1.18.2
         with:
-          command: cves
+          command: cves,environment
           image: ${{ steps.meta.outputs.tags }}
           sarif-file: sarif.output.json
+          organization: mkaraki1111
+          environment: prod
           summary: true
 
       - name: Upload SARIF result
