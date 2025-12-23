@@ -96,7 +96,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
         uses: docker/scout-action@f8c776824083494ab0d56b8105ba2ca85c86e4de # v1.18.2
         with:
-          command: quickview,compare,cves,recommendations
+          command: compare,cves,recommendations
           image: local://${{ steps.meta.outputs.tags }}
           to: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.base_ref }}
           ignore-unchanged: true
