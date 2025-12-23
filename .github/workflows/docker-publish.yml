@@ -91,7 +91,6 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PAT }}
 
-      # Compare the image built in the pull request with the one in production
       - name: Docker Scout (PR)
         id: docker-scout
         if: ${{ github.event_name == 'pull_request' }}
@@ -112,7 +111,7 @@ jobs:
         uses: docker/scout-action@f8c776824083494ab0d56b8105ba2ca85c86e4de # v1.18.2
         with:
           command: cves
-          image: local://${{ steps.meta.outputs.tags }}
+          image: ${{ steps.meta.outputs.tags }}
           sarif-file: sarif.output.json
           summary: true
 
