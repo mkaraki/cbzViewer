@@ -95,8 +95,8 @@ jobs:
         uses: docker/scout-action@v1
         with:
           command: quickview,compare,cves,recommendations
-          image: ${{ steps.meta.outputs.tags }}
-          to: ${{ github.base_ref }}
+          image: local://${{ steps.meta.outputs.tags }}
+          to: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.base_ref }}
           ignore-unchanged: true
           only-severities: critical,high
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -109,7 +109,7 @@ jobs:
         uses: docker/scout-action@v1
         with:
           command: cves
-          image: ${{ steps.meta.outputs.tags }}
+          image: local://${{ steps.meta.outputs.tags }}
           sarif-file: sarif.output.json
           summary: true
 
