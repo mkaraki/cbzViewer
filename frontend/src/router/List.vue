@@ -3,6 +3,10 @@ import {onBeforeMount, type Ref, ref, watch} from "vue";
 import * as Sentry from '@sentry/vue';
 import '../style/list.css';
 
+defineOptions({
+  name: 'List',
+});
+
 const data: Ref<any> = ref([]);
 
 const props = defineProps({
@@ -15,9 +19,10 @@ const props = defineProps({
 const state = ref(0);
 
 const funcOnBeforeMount = () => {
+  if (state.value !== 2)
+    state.value = 0;
+  
   const traceData = Sentry.getTraceData();
-
-  state.value = 0;
   fetch(`/api/list?path=${encodeURIComponent(props.path ?? '')}`, {
     headers: {
       "sentry-trace": traceData['sentry-trace'] ?? '',
