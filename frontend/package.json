@@ -18,7 +18,7 @@
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
-    "@sentry/vite-plugin": "^4.9.1",
+    "@sentry/vite-plugin": "^5.1.1",
     "@tsconfig/node22": "^22.0.5",
     "@types/bootstrap": "^5.2.10",
     "@types/node": "^25.5.0",
