@@ -4,9 +4,13 @@ import './style/global.css';
 </script>
 
 <template>
-  <transition name="fade">
-    <router-view></router-view>
-  </transition>
+  <router-view v-slot="{ Component, route }">
+    <transition>
+      <keep-alive :include="['List']">
+        <component :is="Component" :key="route.fullPath"></component>
+      </keep-alive>   
+    </transition>
+  </router-view>
 </template>
 
 <style scoped></style>
