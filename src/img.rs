@@ -108,49 +108,27 @@ pub async fn img_handler(
 }
 
 /// Validate a zip-internal path to prevent archive traversal.
-
 ///
-
 /// This function checks that the provided `path` is safe to pass to
-
 /// `zip::ZipArchive::by_name` by rejecting:
-
 /// - paths that start with `/` or `\` (absolute POSIX/UNC paths),
-
 /// - Windows-style absolute prefixes like `C:\...` or `C:/...`,
-
 /// - any path component equal to `..`, and
-
 /// - any platform root or prefix components.
-
 ///
-
 /// # Returns
-
 ///
-
 /// `true` if the path does not contain absolute roots, drive-letter prefixes,
-
 /// or parent-directory (`..`) components; `false` otherwise.
-
 ///
-
 /// # Examples
-
 ///
-
 /// ```
-
 /// assert!(is_safe_zip_path("images/page1.jpg"));
-
 /// assert!(is_safe_zip_path("nested/dir/image.png"));
-
 /// assert!(!is_safe_zip_path("/etc/passwd"));
-
 /// assert!(!is_safe_zip_path("C:\\Windows\\system32\\cmd.exe"));
-
 /// assert!(!is_safe_zip_path("foo/../bar.jpg"));
-
 /// ```
 fn is_safe_zip_path(path: &str) -> bool {
     tracing::trace!("CALL is_safe_zip_path: {}", path);
