@@ -10,6 +10,25 @@ mod pathutils;
 mod read;
 mod thumb;
 
+/// Serves the file "dist/legal.txt" as UTF-8 plain text.
+///
+/// If reading the file fails, logs the error, reports it to Sentry, and returns HTTP 500.
+///
+/// # Examples
+///
+/// ```
+/// # async fn doc_example() {
+/// use actix_web::{test, App, web};
+/// let app = test::init_service(
+///     App::new().route("/legal", web::get().to(crate::legal_handler))
+/// ).await;
+///
+/// let req = test::TestRequest::with_uri("/legal").to_request();
+/// let resp = test::call_service(&app, req).await;
+/// // Either the file was served (200) or an internal server error was returned (500).
+/// assert!(resp.status().is_success() || resp.status().as_u16() == 500);
+/// # }
+/// ```
 async fn legal_handler() -> impl Responder {
     let content = std::fs::read("dist/legal.txt");
     if content.is_err() {
@@ -24,6 +43,32 @@ async fn legal_handler() -> impl Responder {
         .body(content)
 }
 
+/// Serves the single-page application's `index.html`, replacing runtime template placeholders.
+///
+/// Returns `404 Not Found` for requests to `/favicon.ico` and `/robots.txt`. If `dist/index.html`
+/// cannot be read, returns a `500 Internal Server Error` with a short plain-text message. On success,
+/// returns the HTML with `{{ .SentryDsn }}` and `{{ .ServerHost }}` replaced and `{{ .SentryBaggage }}`
+/// / `{{ .SentryTrace }}` removed.
+///
+/// # Returns
+///
+/// An `HttpResponse`: `200 OK` with the rendered HTML on success; `404 Not Found` for `/favicon.ico`
+/// or `/robots.txt`; `500 Internal Server Error` with a short plain-text body when `index.html`
+/// cannot be read.
+///
+/// # Examples
+///
+/// ```
+/// use actix_web::test;
+/// use actix_web::http::StatusCode;
+///
+/// let req = test::TestRequest::with_uri("/").to_http_request();
+/// let resp = actix_rt::System::new().block_on(async {
+///     let res = crate::frontend_handler(req).await.respond_to(&req);
+///     res
+/// });
+/// assert_eq!(resp.status(), StatusCode::OK);
+/// ```
 async fn frontend_handler(req: HttpRequest) -> impl Responder {
     let path = req.uri().path();
 
@@ -62,6 +107,23 @@ async fn frontend_handler(req: HttpRequest) -> impl Responder {
         .body(html)
 }
 
+/// Initializes observability, loads configuration, and runs the Actix-Web HTTP server on `0.0.0.0:8080`.
+///
+/// This function configures Sentry and tracing, loads application configuration, registers routes and middleware,
+/// and starts the Actix runtime to serve HTTP requests. It returns when the server has been started and later
+/// when the runtime completes (e.g., on shutdown).
+///
+/// # Returns
+///
+/// `Ok(())` if the server lifecycle completed successfully, `Err` if an I/O error occurred (for example, failing to bind the socket).
+///
+/// # Examples
+///
+/// ```no_run
+/// // Starts the server (no_run prevents the doctest from actually running it).
+/// # use std::io;
+/// # fn try_main() -> io::Result<()> { super::main() }
+/// ```
 fn main() -> io::Result<()> {
     let _guard = sentry::init((
         std::env::var("SENTRY_DSN").unwrap_or("".to_string()),
