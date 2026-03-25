@@ -1,4 +1,5 @@
-Apache License 2.0
+num-conv
+https://github.com/jhpratt/num-conv
 ----------------------------------------------------------------
 
                                  Apache License
@@ -205,7 +206,8 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+powerfmt
+https://github.com/jhpratt/powerfmt
 ----------------------------------------------------------------
 
                                  Apache License
@@ -412,7 +414,8 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+deranged
+https://github.com/jhpratt/deranged
 ----------------------------------------------------------------
 
                                  Apache License
@@ -619,7 +622,16 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+encoding_rs
+https://github.com/hsivonen/encoding_rs
+iri-string
+https://github.com/lo48576/iri-string
+utf8_iter
+https://github.com/hsivonen/utf8_iter
+zeroize
+https://github.com/RustCrypto/utils
+zeroize_derive
+https://github.com/RustCrypto/utils/tree/master/zeroize/derive
 ----------------------------------------------------------------
 
                                  Apache License
@@ -826,7 +838,8 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+fast_image_resize
+https://github.com/cykooz/fast_image_resize
 ----------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004
@@ -1032,7 +1045,30 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+windows-link
+https://github.com/microsoft/windows-rs
+windows-sys
+https://github.com/microsoft/windows-rs
+windows-sys
+https://github.com/microsoft/windows-rs
+windows-targets
+https://github.com/microsoft/windows-rs
+windows_aarch64_gnullvm
+https://github.com/microsoft/windows-rs
+windows_aarch64_msvc
+https://github.com/microsoft/windows-rs
+windows_i686_gnu
+https://github.com/microsoft/windows-rs
+windows_i686_gnullvm
+https://github.com/microsoft/windows-rs
+windows_i686_msvc
+https://github.com/microsoft/windows-rs
+windows_x86_64_gnu
+https://github.com/microsoft/windows-rs
+windows_x86_64_gnullvm
+https://github.com/microsoft/windows-rs
+windows_x86_64_msvc
+https://github.com/microsoft/windows-rs
 ----------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004
@@ -1238,7 +1274,8 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+zopfli
+https://github.com/zopfli-rs/zopfli
 ----------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004
@@ -1444,7 +1481,8 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+crc-catalog
+https://github.com/akhilles/crc-catalog.git
 ----------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004
@@ -1650,7 +1688,8 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+zerocopy
+https://github.com/google/zerocopy
 ----------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004
@@ -1857,7 +1896,10 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+moxcms
+https://github.com/awxkee/moxcms.git
+pxfm
+https://github.com/awxkee/pxfm
 ----------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004
@@ -2063,7 +2105,10 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+zune-core
+https://github.com/etemesi254/zune-image
+zune-jpeg
+https://github.com/etemesi254/zune-image/tree/dev/crates/zune-jpeg
 ----------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004
@@ -2269,7 +2314,8 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+ipnet
+https://github.com/krisprice/ipnet
 ----------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004
@@ -2475,7 +2521,34 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+actix-codec
+https://github.com/actix/actix-net
+actix-files
+https://github.com/actix/actix-web
+actix-http
+https://github.com/actix/actix-web
+actix-macros
+https://github.com/actix/actix-net.git
+actix-router
+https://github.com/actix/actix-web
+actix-rt
+https://github.com/actix/actix-net
+actix-server
+https://github.com/actix/actix-net/tree/master/actix-server
+actix-service
+https://github.com/actix/actix-net
+actix-utils
+https://github.com/actix/actix-net
+actix-web-codegen
+https://github.com/actix/actix-web
+actix-web
+https://github.com/actix/actix-web
+bytestring
+https://github.com/actix/actix-net
+local-channel
+https://github.com/actix/actix-net
+local-waker
+https://github.com/actix/actix-net
 ----------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004
@@ -2681,7 +2754,8 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+impl-more
+https://github.com/robjtede/impl-more
 ----------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004
@@ -2887,7 +2961,8 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+winapi
+https://github.com/retep998/winapi-rs
 ----------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004
@@ -3093,7 +3168,22 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+crc32fast
+https://github.com/srijs/rust-crc32fast
+foreign-types-shared
+https://github.com/sfackler/foreign-types
+foreign-types
+https://github.com/sfackler/foreign-types
+hex
+https://github.com/KokaKiwi/rust-hex
+native-tls
+https://github.com/rust-native-tls/rust-native-tls
+openssl-macros
+
+openssl
+https://github.com/rust-openssl/rust-openssl
+quick-error
+http://github.com/tailhook/quick-error
 ----------------------------------------------------------------
                                  Apache License
                            Version 2.0, January 2004
@@ -3300,7 +3390,8 @@ Apache License 2.0
 
 ================================================================
 
-Apache License 2.0
+crc
+https://github.com/mrhooray/crc-rs.git
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0 January 2004
@@ -3506,7 +3597,16 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+futures-channel
+https://github.com/rust-lang/futures-rs
+futures-core
+https://github.com/rust-lang/futures-rs
+futures-sink
+https://github.com/rust-lang/futures-rs
+futures-task
+https://github.com/rust-lang/futures-rs
+futures-util
+https://github.com/rust-lang/futures-rs
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -3713,7 +3813,8 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+typenum
+https://github.com/paholg/typenum
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -3918,7 +4019,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ================================================================
 
-Apache License 2.0
+reqwest
+https://github.com/seanmonstar/reqwest
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -4124,7 +4226,8 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+cookie
+https://github.com/SergioBenitez/cookie-rs
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -4331,7 +4434,10 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+http
+https://github.com/hyperium/http
+http
+https://github.com/hyperium/http
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -4537,7 +4643,8 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+pin-utils
+https://github.com/rust-lang-nursery/pin-utils
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -4743,7 +4850,8 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+v_htmlescape
+https://github.com/botika/v_escape
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -4949,7 +5057,8 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+ppv-lite86
+https://github.com/cryptocorrosion/cryptocorrosion
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -5155,7 +5264,8 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+rustls-pki-types
+https://github.com/rustls/pki-types
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -5361,7 +5471,8 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+uname
+https://github.com/icorderi/rust-uname
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -5567,7 +5678,10 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+gif
+https://github.com/image-rs/image-gif
+weezl
+https://github.com/image-rs/weezl
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -5772,7 +5886,170 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ================================================================
 
-Apache License 2.0
+addr2line
+https://github.com/gimli-rs/addr2line
+arbitrary
+https://github.com/rust-fuzz/arbitrary/
+atomic-waker
+https://github.com/smol-rs/atomic-waker
+autocfg
+https://github.com/cuviper/autocfg
+backtrace
+https://github.com/rust-lang/backtrace-rs
+base64
+https://github.com/marshallpierce/rust-base64
+bitflags
+https://github.com/bitflags/bitflags
+bumpalo
+https://github.com/fitzgen/bumpalo
+bzip2-sys
+https://github.com/alexcrichton/bzip2-rs
+bzip2
+https://github.com/trifectatechfoundation/bzip2-rs
+cc
+https://github.com/rust-lang/cc-rs
+cfg-if
+https://github.com/rust-lang/cfg-if
+core-foundation-sys
+https://github.com/servo/core-foundation-rs
+core-foundation
+https://github.com/servo/core-foundation-rs
+crossbeam-utils
+https://github.com/crossbeam-rs/crossbeam
+debugid
+https://github.com/getsentry/rust-debugid
+derive_arbitrary
+https://github.com/rust-fuzz/arbitrary
+displaydoc
+https://github.com/yaahc/displaydoc
+equivalent
+https://github.com/indexmap-rs/equivalent
+errno
+https://github.com/lambda-fairy/rust-errno
+fastrand
+https://github.com/smol-rs/fastrand
+find-msvc-tools
+https://github.com/rust-lang/cc-rs
+findshlibs
+https://github.com/gimli-rs/findshlibs
+flate2
+https://github.com/rust-lang/flate2-rs
+fnv
+https://github.com/servo/rust-fnv
+form_urlencoded
+https://github.com/servo/rust-url
+gimli
+https://github.com/gimli-rs/gimli
+hashbrown
+https://github.com/rust-lang/hashbrown
+httparse
+https://github.com/seanmonstar/httparse
+hyper-tls
+https://github.com/hyperium/hyper-tls
+idna
+https://github.com/servo/rust-url/
+idna_adapter
+https://github.com/hsivonen/idna_adapter
+indexmap
+https://github.com/indexmap-rs/indexmap
+jobserver
+https://github.com/rust-lang/jobserver-rs
+js-sys
+https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/js-sys
+lazy_static
+https://github.com/rust-lang-nursery/lazy-static.rs
+linux-raw-sys
+https://github.com/sunfishcode/linux-raw-sys
+lock_api
+https://github.com/Amanieu/parking_lot
+log
+https://github.com/rust-lang/log
+lzma-sys
+https://github.com/alexcrichton/xz2-rs
+mime
+https://github.com/hyperium/mime
+num-traits
+https://github.com/rust-num/num-traits
+object
+https://github.com/gimli-rs/object
+once_cell
+https://github.com/matklad/once_cell
+openssl-probe
+https://github.com/rustls/openssl-probe
+parking_lot
+https://github.com/Amanieu/parking_lot
+parking_lot_core
+https://github.com/Amanieu/parking_lot
+percent-encoding
+https://github.com/servo/rust-url/
+pkg-config
+https://github.com/rust-lang/pkg-config-rs
+png
+https://github.com/image-rs/image-png
+regex-automata
+https://github.com/rust-lang/regex
+regex-lite
+https://github.com/rust-lang/regex
+regex-syntax
+https://github.com/rust-lang/regex
+regex
+https://github.com/rust-lang/regex
+rustc-demangle
+https://github.com/rust-lang/rustc-demangle
+rustc_version
+https://github.com/djc/rustc-version-rs
+rustix
+https://github.com/bytecodealliance/rustix
+scopeguard
+https://github.com/bluss/scopeguard
+security-framework-sys
+https://github.com/kornelski/rust-security-framework
+security-framework
+https://github.com/kornelski/rust-security-framework
+signal-hook-registry
+https://github.com/vorner/signal-hook
+smallvec
+https://github.com/servo/rust-smallvec
+socket2
+https://github.com/rust-lang/socket2
+socket2
+https://github.com/rust-lang/socket2
+stable_deref_trait
+https://github.com/storyyeller/stable_deref_trait
+tempfile
+https://github.com/Stebalien/tempfile
+thread_local
+https://github.com/Amanieu/thread_local-rs
+unicase
+https://github.com/seanmonstar/unicase
+unicode-segmentation
+https://github.com/unicode-rs/unicode-segmentation
+unicode-xid
+https://github.com/unicode-rs/unicode-xid
+url
+https://github.com/servo/rust-url
+uuid
+https://github.com/uuid-rs/uuid
+version_check
+https://github.com/SergioBenitez/version_check
+wasi
+https://github.com/bytecodealliance/wasi
+wasm-bindgen-futures
+https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/futures
+wasm-bindgen-macro-support
+https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/macro-support
+wasm-bindgen-macro
+https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/macro
+wasm-bindgen-shared
+https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/shared
+wasm-bindgen
+https://github.com/wasm-bindgen/wasm-bindgen
+web-sys
+https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/web-sys
+wit-bindgen
+https://github.com/bytecodealliance/wit-bindgen
+xz2
+https://github.com/alexcrichton/xz2-rs
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -5978,7 +6255,26 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+aes
+https://github.com/RustCrypto/block-ciphers
+block-buffer
+https://github.com/RustCrypto/utils
+cipher
+https://github.com/RustCrypto/traits
+cpufeatures
+https://github.com/RustCrypto/utils
+crypto-common
+https://github.com/RustCrypto/traits
+digest
+https://github.com/RustCrypto/traits
+hmac
+https://github.com/RustCrypto/MACs
+inout
+https://github.com/RustCrypto/utils
+pbkdf2
+https://github.com/RustCrypto/password-hashes/tree/master/pbkdf2
+sha1
+https://github.com/RustCrypto/hashes
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -6184,7 +6480,8 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+rand_core
+https://github.com/rust-random/rand
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -6376,7 +6673,8 @@ APPENDIX: How to apply the Apache License to your work.
 
 ================================================================
 
-Apache License 2.0
+getrandom
+https://github.com/rust-random/getrandom
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -6582,7 +6880,8 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+adler2
+https://github.com/oyvindln/adler2
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -6788,7 +7087,8 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+vcpkg
+https://github.com/mcgoo/vcpkg-rs
 ----------------------------------------------------------------
                               Apache License
                         Version 2.0, January 2004
@@ -6995,7 +7295,8 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+bytemuck
+https://github.com/Lokathor/bytemuck
 ----------------------------------------------------------------
 Apache License
 Version 2.0, January 2004
@@ -7061,7 +7362,8 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+httpdate
+https://github.com/pyfisch/httpdate
 ----------------------------------------------------------------
 Apache License
 Version 2.0, January 2004
@@ -7267,7 +7569,108 @@ limitations under the License.
 
 ================================================================
 
-Apache License 2.0
+android_system_properties
+https://github.com/nical/android_system_properties
+constant_time_eq
+https://github.com/cesarb/constant_time_eq
+document-features
+https://github.com/slint-ui/document-features
+fdeflate
+https://github.com/image-rs/fdeflate
+image-webp
+https://github.com/image-rs/image-webp
+image
+https://github.com/image-rs/image
+itoa
+https://github.com/dtolnay/itoa
+language-tags
+https://github.com/pyfisch/rust-language-tags
+libc
+https://github.com/rust-lang/libc
+litrs
+https://github.com/LukasKalbertodt/litrs
+miniz_oxide
+https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide
+objc2-cloud-kit
+https://github.com/madsmtm/objc2
+objc2-core-data
+https://github.com/madsmtm/objc2
+objc2-core-foundation
+https://github.com/madsmtm/objc2
+objc2-core-graphics
+https://github.com/madsmtm/objc2
+objc2-core-image
+https://github.com/madsmtm/objc2
+objc2-core-location
+https://github.com/madsmtm/objc2
+objc2-core-text
+https://github.com/madsmtm/objc2
+objc2-quartz-core
+https://github.com/madsmtm/objc2
+objc2-ui-kit
+https://github.com/madsmtm/objc2
+objc2-user-notifications
+https://github.com/madsmtm/objc2
+pin-project-lite
+https://github.com/taiki-e/pin-project-lite
+proc-macro2
+https://github.com/dtolnay/proc-macro2
+quote
+https://github.com/dtolnay/quote
+r-efi
+https://github.com/r-efi/r-efi
+rand
+https://github.com/rust-random/rand
+rand_chacha
+https://github.com/rust-random/rand
+rustversion
+https://github.com/dtolnay/rustversion
+ryu
+https://github.com/dtolnay/ryu
+semver
+https://github.com/dtolnay/semver
+serde
+https://github.com/serde-rs/serde
+serde_core
+https://github.com/serde-rs/serde
+serde_derive
+https://github.com/serde-rs/serde
+serde_json
+https://github.com/serde-rs/json
+serde_urlencoded
+https://github.com/nox/serde_urlencoded
+shlex
+https://github.com/comex/rust-shlex
+syn
+https://github.com/dtolnay/syn
+sync_wrapper
+https://github.com/Actyx/sync_wrapper
+thiserror-impl
+https://github.com/dtolnay/thiserror
+thiserror-impl
+https://github.com/dtolnay/thiserror
+thiserror
+https://github.com/dtolnay/thiserror
+thiserror
+https://github.com/dtolnay/thiserror
+time-core
+https://github.com/time-rs/time
+time-macros
+https://github.com/time-rs/time
+time
+https://github.com/time-rs/time
+unicode-ident
+https://github.com/dtolnay/unicode-ident
+wasip2
+https://github.com/bytecodealliance/wasi-rs
+winapi-i686-pc-windows-gnu
+https://github.com/retep998/winapi-rs
+winapi-x86_64-pc-windows-gnu
+https://github.com/retep998/winapi-rs
+zstd-safe
+https://github.com/gyscos/zstd-rs
+zstd-sys
+https://github.com/gyscos/zstd-rs
 ----------------------------------------------------------------
 Apache License
 Version 2.0, January 2004
@@ -7345,7 +7748,8 @@ limitations under the License.
 
 ================================================================
 
-BSD 3-Clause &quot;New&quot; or &quot;Revised&quot; License
+alloc-no-stdlib
+https://github.com/dropbox/rust-alloc-no-stdlib
 ----------------------------------------------------------------
 Copyright (c) 2016 Dropbox, Inc.
 All rights reserved.
@@ -7362,7 +7766,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&
 
 ================================================================
 
-BSD 3-Clause &quot;New&quot; or &quot;Revised&quot; License
+subtle
+https://github.com/dalek-cryptography/subtle
 ----------------------------------------------------------------
 Copyright (c) 2016-2017 Isis Agora Lovecruft, Henry de Valence. All rights reserved.
 Copyright (c) 2016-2024 Isis Agora Lovecruft. All rights reserved.
@@ -7396,7 +7801,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ================================================================
 
-BSD 3-Clause &quot;New&quot; or &quot;Revised&quot; License
+alloc-stdlib
+https://github.com/dropbox/rust-alloc-no-stdlib
+brotli
+https://github.com/dropbox/rust-brotli
 ----------------------------------------------------------------
 Copyright (c) &lt;year&gt; &lt;owner&gt;. 
 
@@ -7412,7 +7820,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS &quot;AS IS&
 
 ================================================================
 
-BSD 3-Clause &quot;New&quot; or &quot;Revised&quot; License
+encoding_rs
+https://github.com/hsivonen/encoding_rs
 ----------------------------------------------------------------
 Copyright © WHATWG (Apple, Google, Mozilla, Microsoft).
 
@@ -7443,7 +7852,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ================================================================
 
-MIT License
+brotli
+https://github.com/dropbox/rust-brotli
 ----------------------------------------------------------------
 Copyright (c) 2009, 2010, 2013-2016 by the Brotli Authors.
 
@@ -7467,7 +7877,8 @@ THE SOFTWARE.
 
 ================================================================
 
-MIT License
+openssl-sys
+https://github.com/rust-openssl/rust-openssl
 ----------------------------------------------------------------
 Copyright (c) 2014 Alex Crichton
 
@@ -7497,7 +7908,8 @@ DEALINGS IN THE SOFTWARE.
 
 ================================================================
 
-MIT License
+mio
+https://github.com/tokio-rs/mio
 ----------------------------------------------------------------
 Copyright (c) 2014 Carl Lerche and other MIO contributors
 
@@ -7521,7 +7933,8 @@ THE SOFTWARE.
 
 ================================================================
 
-MIT License
+hyper
+https://github.com/hyperium/hyper
 ----------------------------------------------------------------
 Copyright (c) 2014-2025 Sean McArthur
 
@@ -7545,7 +7958,8 @@ THE SOFTWARE.
 
 ================================================================
 
-MIT License
+schannel
+https://github.com/steffengy/schannel-rs
 ----------------------------------------------------------------
 Copyright (c) 2015 steffengy
 
@@ -7557,7 +7971,8 @@ THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRES
 
 ================================================================
 
-MIT License
+redox_syscall
+https://gitlab.redox-os.org/redox-os/syscall
 ----------------------------------------------------------------
 Copyright (c) 2017 Redox OS Developers
 
@@ -7584,7 +7999,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ================================================================
 
-MIT License
+h2
+https://github.com/hyperium/h2
+h2
+https://github.com/hyperium/h2
 ----------------------------------------------------------------
 Copyright (c) 2017 h2 authors
 
@@ -7614,7 +8032,8 @@ DEALINGS IN THE SOFTWARE.
 
 ================================================================
 
-MIT License
+bytes
+https://github.com/tokio-rs/bytes
 ----------------------------------------------------------------
 Copyright (c) 2018 Carl Lerche
 
@@ -7644,7 +8063,8 @@ DEALINGS IN THE SOFTWARE.
 
 ================================================================
 
-MIT License
+want
+https://github.com/seanmonstar/want
 ----------------------------------------------------------------
 Copyright (c) 2018-2019 Sean McArthur
 
@@ -7669,7 +8089,8 @@ THE SOFTWARE.
 
 ================================================================
 
-MIT License
+try-lock
+https://github.com/seanmonstar/try-lock
 ----------------------------------------------------------------
 Copyright (c) 2018-2023 Sean McArthur
 Copyright (c) 2016 Alex Crichton
@@ -7695,7 +8116,8 @@ THE SOFTWARE.
 
 ================================================================
 
-MIT License
+slab
+https://github.com/tokio-rs/slab
 ----------------------------------------------------------------
 Copyright (c) 2019 Carl Lerche
 
@@ -7725,7 +8147,8 @@ DEALINGS IN THE SOFTWARE.
 
 ================================================================
 
-MIT License
+sharded-slab
+https://github.com/hawkw/sharded-slab
 ----------------------------------------------------------------
 Copyright (c) 2019 Eliza Weisman
 
@@ -7749,7 +8172,18 @@ THE SOFTWARE.
 
 ================================================================
 
-MIT License
+tokio-native-tls
+https://github.com/tokio-rs/tls
+tracing-attributes
+https://github.com/tokio-rs/tracing
+tracing-core
+https://github.com/tokio-rs/tracing
+tracing-log
+https://github.com/tokio-rs/tracing
+tracing-subscriber
+https://github.com/tokio-rs/tracing
+tracing
+https://github.com/tokio-rs/tracing
 ----------------------------------------------------------------
 Copyright (c) 2019 Tokio Contributors
 
@@ -7779,7 +8213,12 @@ DEALINGS IN THE SOFTWARE.
 
 ================================================================
 
-MIT License
+tower-layer
+https://github.com/tower-rs/tower
+tower-service
+https://github.com/tower-rs/tower
+tower
+https://github.com/tower-rs/tower
 ----------------------------------------------------------------
 Copyright (c) 2019 Tower Contributors
 
@@ -7809,7 +8248,8 @@ DEALINGS IN THE SOFTWARE.
 
 ================================================================
 
-MIT License
+tower-http
+https://github.com/tower-rs/tower-http
 ----------------------------------------------------------------
 Copyright (c) 2019-2021 Tower Contributors
 
@@ -7839,7 +8279,8 @@ DEALINGS IN THE SOFTWARE.
 
 ================================================================
 
-MIT License
+http-body
+https://github.com/hyperium/http-body
 ----------------------------------------------------------------
 Copyright (c) 2019-2024 Sean McArthur &amp; Hyper Contributors
 
@@ -7869,7 +8310,8 @@ DEALINGS IN THE SOFTWARE.
 
 ================================================================
 
-MIT License
+http-body-util
+https://github.com/hyperium/http-body
 ----------------------------------------------------------------
 Copyright (c) 2019-2025 Sean McArthur &amp; Hyper Contributors
 
@@ -7899,7 +8341,8 @@ DEALINGS IN THE SOFTWARE.
 
 ================================================================
 
-MIT License
+hyper-util
+https://github.com/hyperium/hyper-util
 ----------------------------------------------------------------
 Copyright (c) 2023-2025 Sean McArthur
 
@@ -7923,7 +8366,8 @@ THE SOFTWARE.
 
 ================================================================
 
-MIT License
+synstructure
+https://github.com/mystor/synstructure
 ----------------------------------------------------------------
 Copyright 2016 Nika Layzell
 
@@ -7935,7 +8379,8 @@ THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRES
 
 ================================================================
 
-MIT License
+http-range
+https://github.com/bancek/rust-http-range.git
 ----------------------------------------------------------------
 MIT License
 
@@ -7961,7 +8406,8 @@ SOFTWARE.
 
 ================================================================
 
-MIT License
+hostname
+https://github.com/djc/hostname
 ----------------------------------------------------------------
 MIT License
 
@@ -7988,7 +8434,8 @@ SOFTWARE.
 
 ================================================================
 
-MIT License
+lzma-rs
+https://github.com/gendx/lzma-rs
 ----------------------------------------------------------------
 MIT License
 
@@ -8014,7 +8461,8 @@ SOFTWARE.
 
 ================================================================
 
-MIT License
+cfg_aliases
+https://github.com/katharostech/cfg_aliases
 ----------------------------------------------------------------
 MIT License
 
@@ -8028,7 +8476,24 @@ THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRES
 
 ================================================================
 
-MIT License
+sentry-actix
+https://github.com/getsentry/sentry-rust
+sentry-backtrace
+https://github.com/getsentry/sentry-rust
+sentry-contexts
+https://github.com/getsentry/sentry-rust
+sentry-core
+https://github.com/getsentry/sentry-rust
+sentry-debug-images
+https://github.com/getsentry/sentry-rust
+sentry-panic
+https://github.com/getsentry/sentry-rust
+sentry-tracing
+https://github.com/getsentry/sentry-rust
+sentry-types
+https://github.com/getsentry/sentry-rust
+sentry
+https://github.com/getsentry/sentry-rust
 ----------------------------------------------------------------
 MIT License
 
@@ -8054,7 +8519,8 @@ SOFTWARE.
 
 ================================================================
 
-MIT License
+convert_case
+https://github.com/rutrum/convert-case
 ----------------------------------------------------------------
 MIT License
 
@@ -8079,7 +8545,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ================================================================
 
-MIT License
+block2
+https://github.com/madsmtm/objc2
+brotli-decompressor
+https://github.com/dropbox/rust-brotli-decompressor
+objc2-encode
+https://github.com/madsmtm/objc2
+objc2-foundation
+https://github.com/madsmtm/objc2
+objc2
+https://github.com/madsmtm/objc2
 ----------------------------------------------------------------
 MIT License
 
@@ -8102,7 +8577,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ================================================================
 
-MIT License
+tokio-util
+https://github.com/tokio-rs/tokio
+tokio
+https://github.com/tokio-rs/tokio
 ----------------------------------------------------------------
 MIT License
 
@@ -8128,7 +8606,8 @@ SOFTWARE.
 
 ================================================================
 
-MIT License
+simd-adler32
+https://github.com/mcountryman/simd-adler32
 ----------------------------------------------------------------
 MIT License
 
@@ -8154,7 +8633,8 @@ SOFTWARE.
 
 ================================================================
 
-MIT License
+zmij
+https://github.com/dtolnay/zmij
 ----------------------------------------------------------------
 Permission is hereby granted, free of charge, to any
 person obtaining a copy of this software and associated
@@ -8182,7 +8662,8 @@ DEALINGS IN THE SOFTWARE.
 
 ================================================================
 
-MIT License
+deflate64
+https://github.com/anatawa12/deflate64-rs
 ----------------------------------------------------------------
 The MIT License (MIT)
 
@@ -8211,7 +8692,8 @@ SOFTWARE.
 
 ================================================================
 
-MIT License
+zip
+https://github.com/zip-rs/zip2.git
 ----------------------------------------------------------------
 The MIT License (MIT)
 
@@ -8239,7 +8721,8 @@ Some files in the &quot;tests/data&quot; subdirectory of this repository are und
 licences; see files named LICENSE.*.txt for details.
 ================================================================
 
-MIT License
+natord
+https://github.com/lifthrasiir/rust-natord
 ----------------------------------------------------------------
 The MIT License (MIT)
 
@@ -8265,7 +8748,14 @@ THE SOFTWARE.
 
 ================================================================
 
-MIT License
+aho-corasick
+https://github.com/BurntSushi/aho-corasick
+byteorder-lite
+https://github.com/image-rs/byteorder-lite
+byteorder
+https://github.com/BurntSushi/byteorder
+memchr
+https://github.com/BurntSushi/memchr
 ----------------------------------------------------------------
 The MIT License (MIT)
 
@@ -8291,7 +8781,8 @@ THE SOFTWARE.
 
 ================================================================
 
-MIT License
+nix
+https://github.com/nix-rust/nix
 ----------------------------------------------------------------
 The MIT License (MIT)
 
@@ -8317,7 +8808,10 @@ THE SOFTWARE.
 
 ================================================================
 
-MIT License
+derive_more-impl
+https://github.com/JelteF/derive_more
+derive_more
+https://github.com/JelteF/derive_more
 ----------------------------------------------------------------
 The MIT License (MIT)
 
@@ -8343,7 +8837,8 @@ SOFTWARE.
 
 ================================================================
 
-MIT License
+color_quant
+https://github.com/image-rs/color_quant.git
 ----------------------------------------------------------------
 The MIT License (MIT)
 
@@ -8369,7 +8864,8 @@ SOFTWARE.
 
 ================================================================
 
-MIT License
+os_info
+https://github.com/stanislav-tkach/os_info
 ----------------------------------------------------------------
 The MIT License (MIT)
 
@@ -8395,7 +8891,8 @@ SOFTWARE.
 
 ================================================================
 
-MIT License
+zstd
+https://github.com/gyscos/zstd-rs
 ----------------------------------------------------------------
 The MIT License (MIT)
 Copyright (c) 2016 Alexandre Bury
@@ -8408,7 +8905,8 @@ THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRES
 
 ================================================================
 
-MIT License
+nu-ansi-term
+https://github.com/nushell/nu-ansi-term
 ----------------------------------------------------------------
 The MIT License (MIT)
 
@@ -8435,7 +8933,8 @@ SOFTWARE.
 
 ================================================================
 
-MIT License
+mime_guess
+https://github.com/abonander/mime_guess
 ----------------------------------------------------------------
 The MIT License (MIT)
 
@@ -8462,7 +8961,8 @@ SOFTWARE.
 
 ================================================================
 
-MIT License
+generic-array
+https://github.com/fizyk20/generic-array.git
 ----------------------------------------------------------------
 The MIT License (MIT)
 
@@ -8487,7 +8987,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ================================================================
 
-MIT License
+quick-xml
+https://github.com/tafia/quick-xml
 ----------------------------------------------------------------
 The MIT License (MIT)
 
@@ -8515,7 +9016,8 @@ THE SOFTWARE.
 
 ================================================================
 
-MIT License
+urlencoding
+https://github.com/kornelski/rust_urlencoding
 ----------------------------------------------------------------
 © 2016 Bertram Truong
 © 2021 Kornel Lesiński
@@ -8540,7 +9042,8 @@ THE SOFTWARE.
 
 ================================================================
 
-Unicode License v3
+unicode-ident
+https://github.com/dtolnay/unicode-ident
 ----------------------------------------------------------------
 UNICODE LICENSE V3
 
@@ -8584,7 +9087,42 @@ authorization of the copyright holder.
 
 ================================================================
 
-Unicode License v3
+icu_collections
+https://github.com/unicode-org/icu4x
+icu_locale_core
+https://github.com/unicode-org/icu4x
+icu_normalizer
+https://github.com/unicode-org/icu4x
+icu_normalizer_data
+https://github.com/unicode-org/icu4x
+icu_properties
+https://github.com/unicode-org/icu4x
+icu_properties_data
+https://github.com/unicode-org/icu4x
+icu_provider
+https://github.com/unicode-org/icu4x
+litemap
+https://github.com/unicode-org/icu4x
+potential_utf
+https://github.com/unicode-org/icu4x
+tinystr
+https://github.com/unicode-org/icu4x
+writeable
+https://github.com/unicode-org/icu4x
+yoke-derive
+https://github.com/unicode-org/icu4x
+yoke
+https://github.com/unicode-org/icu4x
+zerofrom-derive
+https://github.com/unicode-org/icu4x
+zerofrom
+https://github.com/unicode-org/icu4x
+zerotrie
+https://github.com/unicode-org/icu4x
+zerovec-derive
+https://github.com/unicode-org/icu4x
+zerovec
+https://github.com/unicode-org/icu4x
 ----------------------------------------------------------------
 UNICODE LICENSE V3
 
@@ -8635,7 +9173,8 @@ ICU 1.8.1 to ICU 57.1 © 1995-2016 International Business Machines Corporation a
 
 ================================================================
 
-zlib License
+foldhash
+https://github.com/orlp/foldhash
 ----------------------------------------------------------------
 Copyright (c) 2024 Orson Peters
 
