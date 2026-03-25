@@ -29,14 +29,11 @@ RUN cargo build --release
 
 FROM debian:trixie-slim
 
-RUN apt-get update && apt-get -y install ca-certificates && \
-    sed -i.bak -r 's@http://deb\.debian\.org/?@https://ftp.riken.jp/Linux/debian/@g' /etc/apt/sources.list.d/debian.sources && \
-    apt-get update
-RUN apt-get update -o Acquire::CompressionTypes::Order::=gz && \
-    apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    liblzma5 \
+    libssl3t64 \
     ca-certificates \
-    && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+	&& rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY config.docker.json /app/config.json
