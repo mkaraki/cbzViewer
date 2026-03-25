@@ -78,9 +78,9 @@ pub fn get_parent_dir(real_path: &Path, config: &Config) -> (bool, String) {
 pub fn get_extension(file_path: &str) -> String {
     tracing::trace!("CALL pathutils::get_extension({})", file_path);
 
-    file_path
-        .rsplit('.')
-        .next()
+    Path::new(file_path)
+        .extension()
+        .and_then(|ext| ext.to_str())
         .unwrap_or("")
         .to_lowercase()
 }
