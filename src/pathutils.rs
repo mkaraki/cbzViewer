@@ -41,6 +41,16 @@ pub fn get_parent_dir(real_path: &Path, config: &Config) -> (bool, String) {
         Err(_) => return (false, String::new()),
     };
 
+    let real_path_canonical = Path::new(real_path).canonicalize();
+    if real_path_canonical.is_err() {
+        log::warn!("[pathutils::get_parent_dir] Failed to canonicalize real_path (user specified path)");
+        return (false, String::new());
+    }
+
+    if real_path.canonicalize().unwrap() == base {
+        return (false, String::new());
+    }
+
     let parent = match real_path.parent() {
         Some(p) => p,
         None => return (false, String::new()),
@@ -53,10 +63,6 @@ pub fn get_parent_dir(real_path: &Path, config: &Config) -> (bool, String) {
         };
 
         let rel_str = format!("/{}", rel.display());
-
-        if rel_str == "/" {
-            return (false, String::new());
-        }
 
         return (true, rel_str);
     }
