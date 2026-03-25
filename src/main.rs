@@ -73,7 +73,6 @@ fn main() -> io::Result<()> {
             send_default_pii: false,
             // Capture all HTTP request bodies, regardless of size
             max_request_body_size: sentry::MaxRequestBodySize::Always,
-            debug: true,
             ..Default::default()
         },
     ));
