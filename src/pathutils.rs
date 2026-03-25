@@ -88,7 +88,7 @@ pub fn get_extension(file_path: &str) -> String {
 pub fn is_supported_image(ext: &str) -> bool {
     tracing::trace!("CALL pathutils::is_supported_image({})", ext);
 
-    matches!(ext, "png" | "jpg" | "jpeg" | "gif" | "webp" | "avif")
+    matches!(ext, "png" | "jpg" | "jpeg" | "gif" | "webp")
 }
 
 pub fn is_supported_comic(ext: &str) -> bool {
@@ -105,7 +105,6 @@ pub fn get_content_type(ext: &str) -> &'static str {
         "jpg" | "jpeg" => "image/jpeg",
         "gif" => "image/gif",
         "webp" => "image/webp",
-        "avif" => "image/avif",
         _ => "application/octet-stream",
     }
 }
