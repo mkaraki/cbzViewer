@@ -148,7 +148,7 @@ fn serve_cbz_image(
         return Ok((raw, content_type));
     }
 
-    // Decode → resize → re-encode as WebP.
+    // Decode → resize → re-encode as JPEG.
     let img = image::load_from_memory(&raw)
         .map_err(|e| format!("Failed to decode image: {}", e))?;
 
