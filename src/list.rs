@@ -30,6 +30,27 @@ pub struct ListQuery {
     pub path: Option<String>,
 }
 
+/// Returns a JSON listing of supported files and directories for a requested directory, including parent-directory metadata.
+///
+/// The response payload contains `items` (each with `name`, `path`, and `isDir`), the `currentDir` requested, and `hasParent`/`parentDir` information for navigation.
+///
+/// # Examples
+///
+/// ```
+/// use actix_web::{test, web, App};
+/// use my_crate::{list_handler, Config, ListData};
+///
+/// #[actix_web::test]
+/// async fn list_root_directory() {
+///     let cfg = web::Data::new(Config::default());
+///     let app = test::init_service(App::new().app_data(cfg.clone()).route("/list", web::get().to(list_handler))).await;
+///     let req = test::TestRequest::with_uri("/list").to_request();
+///     let resp = test::call_service(&app, req).await;
+///     assert!(resp.status().is_success());
+///     // Optionally deserialize to inspect shape:
+///     let _body: ListData = test::read_body_json(resp).await;
+/// }
+/// ```
 pub async fn list_handler(
     query: web::Query<ListQuery>,
     req: HttpRequest,

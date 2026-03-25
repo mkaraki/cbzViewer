@@ -4,9 +4,21 @@ use actix_web::HttpResponse;
 use log::trace;
 use crate::config::Config;
 
-/// Resolves and validates a client-supplied relative path against the configured
-/// base directory.  Returns the canonicalised absolute `PathBuf` or an
-/// appropriate `HttpResponse` error.
+/// Resolve a client-supplied path against the configured CBZ base directory and return its canonical absolute path.
+///
+/// On success returns the canonicalized `PathBuf` for the resolved file or directory. If the target path does not exist or cannot be canonicalized, this returns an `HttpResponse` with status `404 Not Found`. If the configured base directory cannot be canonicalized, this returns `500 Internal Server Error`. If the resolved canonical path lies outside the canonical base directory (path traversal), this returns `403 Forbidden`.
+///
+/// # Examples
+///
+/// ```no_run
+/// use actix_web::HttpResponse;
+/// // Assume `config` is available and configured with `cbz_dir`.
+/// let result = get_real_path("/some/dir/file.cbz", &config);
+/// match result {
+///     Ok(path) => println!("Resolved path: {}", path.display()),
+///     Err(resp) => println!("HTTP error: {}", resp.status()),
+/// }
+/// ```
 pub fn get_real_path(client_path: &str, config: &Config) -> Result<PathBuf, HttpResponse> {
     tracing::trace!("CALL pathutils::get_real_path({}, config)", client_path);
 
@@ -36,7 +48,22 @@ pub fn get_real_path(client_path: &str, config: &Config) -> Result<PathBuf, Http
     Ok(canonical)
 }
 
-/// Returns `(has_parent, parent_dir_relative_to_base)`.
+/// Compute the parent directory of `real_path` relative to the configured base directory.
+///
+/// If the canonical parent directory of `real_path` is inside `config.cbz_dir` (and `real_path`
+/// is not the base itself), returns `(true, "/<relative_parent>")` where the second element is
+/// the parent path with a leading slash and relative to the base. In all other cases returns
+/// `(false, "")`.
+///
+/// # Examples
+///
+/// ```
+/// // pseudo-code example; adjust `Config` construction to your project's type
+/// let config = Config { cbz_dir: "/srv/comics".into() };
+/// let (ok, parent) = get_parent_dir(Path::new("/srv/comics/series/issue.cbz"), &config);
+/// assert!(ok);
+/// assert_eq!(parent, "/series");
+/// ```
 pub fn get_parent_dir(real_path: &Path, config: &Config) -> (bool, String) {
     tracing::trace!("CALL pathutils::get_parent_dir({}, config)", real_path.display());
 
@@ -74,7 +101,17 @@ pub fn get_parent_dir(real_path: &Path, config: &Config) -> (bool, String) {
     (false, String::new())
 }
 
-/// Returns the lowercase file extension, or an empty string if none.
+/// Extracts the file extension from a path and returns it as a lowercase `String`.
+///
+/// If the path has no extension or the extension cannot be converted to UTF-8, returns an empty string.
+///
+/// # Examples
+///
+/// ```
+/// assert_eq!(get_extension("archive.CBZ"), "cbz");
+/// assert_eq!(get_extension("/path/to/image.PNG"), "png");
+/// assert_eq!(get_extension("no_extension"), "");
+/// ```
 pub fn get_extension(file_path: &str) -> String {
     tracing::trace!("CALL pathutils::get_extension({})", file_path);
 
@@ -85,18 +122,50 @@ pub fn get_extension(file_path: &str) -> String {
         .to_lowercase()
 }
 
+/// Checks whether a file extension corresponds to a supported image format.
+///
+/// Returns `true` if `ext` is one of: `"png"`, `"jpg"`, `"jpeg"`, `"gif"`, or `"webp"`, `false` otherwise.
+///
+/// # Examples
+///
+/// ```
+/// assert!(is_supported_image("png"));
+/// assert!(is_supported_image("jpeg"));
+/// assert!(!is_supported_image("txt"));
+/// ```
 pub fn is_supported_image(ext: &str) -> bool {
     tracing::trace!("CALL pathutils::is_supported_image({})", ext);
 
     matches!(ext, "png" | "jpg" | "jpeg" | "gif" | "webp")
 }
 
+/// Determines whether the given file extension identifies a supported comic archive.
+///
+/// # Examples
+///
+/// ```
+/// assert!(is_supported_comic("cbz"));
+/// assert!(!is_supported_comic("zip"));
+/// ```
+///
+/// `true` if `ext` is `"cbz"`, `false` otherwise.
 pub fn is_supported_comic(ext: &str) -> bool {
     tracing::trace!("CALL pathutils::is_supported_comic({})", ext);
 
     ext == "cbz"
 }
 
+/// Maps a file extension to the corresponding HTTP `Content-Type` MIME string.
+///
+/// Known image extensions are mapped to their specific MIME types; unknown extensions
+/// map to `"application/octet-stream"`.
+///
+/// # Examples
+///
+/// ```
+/// let ct = get_content_type("png");
+/// assert_eq!(ct, "image/png");
+/// ```
 pub fn get_content_type(ext: &str) -> &'static str {
     tracing::trace!("CALL pathutils::get_content_type({})", ext);
 
@@ -109,7 +178,21 @@ pub fn get_content_type(ext: &str) -> &'static str {
     }
 }
 
-/// Returns the HTTP-formatted `Last-Modified` value for `path`, if available.
+/// Formats the file's modification time as an HTTP-date string suitable for a `Last-Modified` header.
+///
+/// Returns the modification time formatted with `httpdate::fmt_http_date` when filesystem metadata and the modified timestamp are available; returns `None` if metadata or modification time cannot be read.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::Path;
+/// // `pathutils` refers to the module containing `get_file_mtime_str`
+/// let p = Path::new("Cargo.toml");
+/// if let Some(mtime) = pathutils::get_file_mtime_str(p) {
+///     // Example HTTP-date: "Tue, 15 Nov 1994 12:45:26 GMT"
+///     assert!(mtime.contains(',') && mtime.ends_with("GMT"));
+/// }
+/// ```
 pub fn get_file_mtime_str(path: &Path) -> Option<String> {
     tracing::trace!("CALL pathutils::get_file_mtime_str({})", path.display());
 
@@ -118,8 +201,25 @@ pub fn get_file_mtime_str(path: &Path) -> Option<String> {
     Some(httpdate::fmt_http_date(mtime))
 }
 
-/// Returns `true` and writes `304 Not Modified` when the client's cached copy
-/// is still current.  Returns `false` when the client needs a fresh response.
+/// Checks the request's `If-Modified-Since` header against the file's modification time and sets `304 Not Modified` when they match.
+///
+/// This compares the exact string value of the request's `If-Modified-Since` header to the file's HTTP-formatted modification time (as produced by `get_file_mtime_str`). If they match, the response builder's status is set to `304 Not Modified`.
+///
+/// # Returns
+///
+/// `true` if the header exactly equals the file's modification time and the response status is set to `304 Not Modified`, `false` otherwise.
+///
+/// # Examples
+///
+/// ```
+/// use actix_web::{test::TestRequest, HttpResponse};
+/// use std::path::Path;
+///
+/// // A request without an If-Modified-Since header always yields false.
+/// let req = TestRequest::default().to_http_request();
+/// let mut res = HttpResponse::Ok();
+/// assert_eq!(crate::pathutils::check_file_cache(Path::new("nonexistent"), &req, &mut res), false);
+/// ```
 pub fn check_file_cache(
     path: &Path,
     req: &actix_web::HttpRequest,
@@ -140,7 +240,20 @@ pub fn check_file_cache(
     false
 }
 
-/// Adds `Last-Modified` and `Cache-Control` headers to a response builder.
+/// Inserts caching headers into an HTTP response builder.
+///
+/// If the filesystem modification time for `path` can be read and formatted, this adds a
+/// `Last-Modified` header with that value. It always adds `Cache-Control: public, max-age=31536000`.
+///
+/// # Examples
+///
+/// ```no_run
+/// use std::path::Path;
+/// use actix_web::HttpResponse;
+///
+/// let mut res = HttpResponse::Ok();
+/// apply_cache_headers(Path::new("/var/www/file.png"), &mut res);
+/// ```
 pub fn apply_cache_headers(path: &Path, res: &mut actix_web::HttpResponseBuilder) {
     tracing::trace!("CALL pathutils::apply_cache_headers({}, res)", path.display());
 

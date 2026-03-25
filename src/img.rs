@@ -16,6 +16,22 @@ pub struct ImgQuery {
     pub size: Option<String>,
 }
 
+/// Serves an image from a filesystem path or a CBZ archive, optionally resizing it.
+///
+/// Validates that `path` and `f` query parameters are present, rejects unsafe archive entry paths,
+/// checks and applies HTTP cache headers, and supports `thumb` (forces 100px width) or `size` to
+/// request a resized JPEG; when no size is requested the original entry bytes and content type are returned.
+///
+/// # Returns
+/// An HTTP response containing the image bytes and appropriate `Content-Type` on success; `400 Bad Request` for invalid input (missing parameters, unsafe archive paths, or unsupported formats); or `500 Internal Server Error` for processing failures.
+///
+/// # Examples
+///
+/// ```
+/// // Construct a query and call the handler (example sketch; actual invocation requires Actix runtime)
+/// // let query = web::Query(ImgQuery { path: Some("comics.cbz".into()), f: Some("page1.jpg".into()), thumb: None, size: Some("200".into()) });
+/// // let resp = img_handler(query, req, config).await;
+/// ```
 pub async fn img_handler(
     query: web::Query<ImgQuery>,
     req: HttpRequest,
@@ -91,9 +107,29 @@ pub async fn img_handler(
     }
 }
 
-/// Ensures a zip-internal path does not attempt to escape the archive.
-/// Rejects absolute paths, paths containing `..` components, and any
-/// platform-specific absolute prefixes (e.g. Windows drive letters).
+/// Validate a zip-internal path to prevent archive traversal.
+///
+/// This function checks that the provided `path` is safe to pass to
+/// `zip::ZipArchive::by_name` by rejecting:
+/// - paths that start with `/` or `\` (absolute POSIX/UNC paths),
+/// - Windows-style absolute prefixes like `C:\...` or `C:/...`,
+/// - any path component equal to `..`, and
+/// - any platform root or prefix components.
+///
+/// # Returns
+///
+/// `true` if the path does not contain absolute roots, drive-letter prefixes,
+/// or parent-directory (`..`) components; `false` otherwise.
+///
+/// # Examples
+///
+/// ```
+/// assert!(is_safe_zip_path("images/page1.jpg"));
+/// assert!(is_safe_zip_path("nested/dir/image.png"));
+/// assert!(!is_safe_zip_path("/etc/passwd"));
+/// assert!(!is_safe_zip_path("C:\\Windows\\system32\\cmd.exe"));
+/// assert!(!is_safe_zip_path("foo/../bar.jpg"));
+/// ```
 fn is_safe_zip_path(path: &str) -> bool {
     tracing::trace!("CALL is_safe_zip_path: {}", path);
 
@@ -117,8 +153,43 @@ fn is_safe_zip_path(path: &str) -> bool {
     true
 }
 
-/// Reads an image entry from a CBZ archive and optionally resizes it.
-/// Returns `(image_bytes, content_type)`.
+/// Read an image entry from a CBZ (zip) archive and return its bytes along with the MIME content type.
+///
+/// If `size == -1`, this function returns the original entry bytes and a content type derived from the
+/// entry's extension. If `size != -1`, the entry is decoded, resized to the requested width while
+/// preserving aspect ratio, re-encoded as JPEG, and returned with content type `"image/jpeg"`.
+///
+/// # Parameters
+///
+/// - `cbz_path`: filesystem path to the CBZ file.
+/// - `image_name`: path/name of the entry inside the archive.
+/// - `size`: target width in pixels; `-1` requests the original image (no decoding/resizing).
+///
+/// # Returns
+///
+/// On success returns `Ok((bytes, content_type))` where `bytes` are the image data to send and
+/// `content_type` is the MIME type (e.g., `"image/jpeg"`). On failure returns `Err` with an error message.
+///
+/// # Examples
+///
+/// ```
+/// use std::io::Write;
+/// use zip::write::FileOptions;
+///
+/// // Create a temporary CBZ (zip) with a single entry "img.jpg".
+/// let dir = tempfile::tempdir().unwrap();
+/// let cbz_path = dir.path().join("test.cbz");
+/// let f = std::fs::File::create(&cbz_path).unwrap();
+/// let mut zip = zip::ZipWriter::new(f);
+/// zip.start_file("img.jpg", FileOptions::default()).unwrap();
+/// zip.write_all(b"fakejpegdata").unwrap();
+/// zip.finish().unwrap();
+///
+/// // Serve the original bytes from the archive.
+/// let (bytes, content_type) = crate::img::serve_cbz_image(cbz_path.to_str().unwrap(), "img.jpg", -1).unwrap();
+/// assert_eq!(content_type, "image/jpeg");
+/// assert!(!bytes.is_empty());
+/// ```
 #[tracing::instrument]
 fn serve_cbz_image(
     cbz_path: &str,
@@ -161,8 +232,25 @@ fn serve_cbz_image(
     Ok((jpeg_bytes, "image/jpeg"))
 }
 
-/// Resizes `img` to `target_width` pixels wide, preserving aspect ratio,
-/// using the Lanczos3 filter from `fast_image_resize`.
+/// Resize an image to the specified target width while preserving aspect ratio.
+///
+/// Returns the original image unmodified if the source width is zero, the target width is zero,
+/// or the source width is less than or equal to the target width (no upscaling).
+///
+/// Uses the Lanczos3 filter from `fast_image_resize` for high-quality downscaling. If image
+/// conversion or the resizing operation fails, the error is captured to Sentry and the original
+/// image is returned.
+///
+/// # Examples
+///
+/// ```
+/// use image::{DynamicImage, RgbaImage};
+///
+/// // 100x50 source image
+/// let src = DynamicImage::ImageRgba8(RgbaImage::new(100, 50));
+/// let out = resize_image(src, 50);
+/// assert_eq!(out.width(), 50);
+/// ```
 #[tracing::instrument]
 fn resize_image(img: image::DynamicImage, target_width: u32) -> image::DynamicImage {
     tracing::trace!("CALL img::resize_image(img, {})", target_width);
@@ -218,7 +306,19 @@ fn resize_image(img: image::DynamicImage, target_width: u32) -> image::DynamicIm
     image::DynamicImage::ImageRgba8(dst_rgba)
 }
 
-/// Encodes a `DynamicImage` as JPEG with the given quality (0–100).
+/// Encode a `DynamicImage` as a JPEG at the specified quality.
+///
+/// Returns a `Vec<u8>` with the JPEG-encoded bytes on success, or an error `String` if encoding fails.
+///
+/// # Examples
+///
+/// ```
+/// use image::{DynamicImage, RgbImage, Rgb};
+///
+/// let img = DynamicImage::ImageRgb8(RgbImage::from_pixel(1, 1, Rgb([255, 0, 0])));
+/// let jpg = crate::img::encode_jpeg(&img, 80).unwrap();
+/// assert!(jpg.len() > 0);
+/// ```
 #[tracing::instrument]
 fn encode_jpeg(img: &image::DynamicImage, quality: u8) -> Result<Vec<u8>, String> {
     tracing::trace!("CALL img::encode_jpeg(img, {})", quality);
