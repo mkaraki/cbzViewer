@@ -11,16 +11,17 @@ mod read;
 mod thumb;
 
 async fn legal_handler() -> impl Responder {
-    match std::fs::read_to_string("dist/legal.txt") {
-        Ok(content) => HttpResponse::Ok()
-            .content_type("text/plain; charset=utf-8")
-            .body(content),
-        Err(e) => {
-            tracing::error!("Failed to read legal.txt");
-            sentry::capture_error(&e);
-            HttpResponse::InternalServerError().finish()
-        }
+    let content = std::fs::read("dist/legal.txt");
+    if content.is_err() {
+        tracing::error!("Failed to read legal.txt");
+        sentry::capture_error(&content.unwrap_err());
+        return HttpResponse::InternalServerError().finish();
     }
+
+    let content = content.unwrap();
+    HttpResponse::Ok()
+        .content_type("text/plain; charset=utf-8")
+        .body(content)
 }
 
 async fn frontend_handler(req: HttpRequest) -> impl Responder {
