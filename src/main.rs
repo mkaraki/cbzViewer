@@ -10,7 +10,7 @@ mod pathutils;
 mod read;
 mod thumb;
 
-/// Serves the file "dist/legal.txt" as UTF-8 plain text.
+/// Serves the file "dist/legal.txt" with UTF-8 plain text content-type header.
 ///
 /// If reading the file fails, logs the error, reports it to Sentry, and returns HTTP 500.
 ///
