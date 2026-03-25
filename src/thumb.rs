@@ -78,6 +78,7 @@ pub async fn dir_thumb_handler(
 }
 
 /// Returns the name of the first image inside the CBZ archive.
+#[tracing::instrument]
 fn get_first_page_name(comic_path: &Path) -> Option<String> {
     let ext = get_extension(comic_path.to_str().unwrap_or(""));
     match ext.as_str() {
@@ -93,6 +94,7 @@ fn get_first_page_name(comic_path: &Path) -> Option<String> {
 
 /// Walks the directory tree to locate the first comic file, returning its
 /// path relative to `base_client_path`.
+#[tracing::instrument]
 fn find_first_comic_in_dir(real_dir: &Path, base_client_path: &str) -> String {
     let entries = match std::fs::read_dir(real_dir) {
         Ok(e) => e,
@@ -124,6 +126,7 @@ fn find_first_comic_in_dir(real_dir: &Path, base_client_path: &str) -> String {
     String::new()
 }
 
+#[tracing::instrument]
 fn find_first_comic_recursive(real_dir: &Path, client_prefix: &str) -> Option<String> {
     let entries = std::fs::read_dir(real_dir).ok()?;
     let mut names: Vec<_> = entries

@@ -82,11 +82,11 @@ pub async fn read_handler(
                     builder.content_type("application/json").json(read_info)
                 }
                 Ok(Err(e)) => {
-                    log::error!("read_cbz error: {}", e);
+                    sentry::capture_message(&e, sentry::Level::Error);
                     HttpResponse::InternalServerError().body(e)
                 }
                 Err(e) => {
-                    log::error!("blocking error: {}", e);
+                    sentry::capture_error(&e);
                     HttpResponse::InternalServerError().finish()
                 }
             }
@@ -95,11 +95,17 @@ pub async fn read_handler(
     }
 }
 
+#[tracing::instrument]
 fn read_cbz(
     abs_path: &str,
     client_path: &str,
     parent_dir: String,
 ) -> Result<ReadInfo, String> {
+    tracing::trace!(
+        "CALL read::read_cbz({}, {}, {})",
+        abs_path.to_owned(), client_path.to_owned(), parent_dir
+    );
+
     let file = File::open(abs_path).map_err(|e| format!("Failed to open file: {}", e))?;
     let mut archive =
         zip::ZipArchive::new(file).map_err(|e| format!("Failed to read CBZ archive: {}", e))?;
@@ -140,9 +146,12 @@ fn read_cbz(
 
 /// Returns a naturally-sorted list of image pages found in the archive.
 /// This only reads the central directory – no file content is decompressed.
+#[tracing::instrument]
 pub fn get_page_list_from_archive(
     archive: &mut zip::ZipArchive<File>,
 ) -> Result<Vec<PageInfo>, String> {
+    tracing::trace!("CALL read::get_page_list_from_archive(archive)");
+
     let mut names: Vec<String> = (0..archive.len())
         .filter_map(|i| archive.by_index_raw(i).ok().map(|f| f.name().to_string()))
         .filter(|name| is_supported_image(&get_extension(name)))

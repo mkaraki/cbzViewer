@@ -1,6 +1,7 @@
 use std::io;
 use actix_files as afs;
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
+use tracing_subscriber::prelude::*;
 
 mod config;
 mod img;
@@ -15,7 +16,8 @@ async fn legal_handler() -> impl Responder {
             .content_type("text/plain; charset=utf-8")
             .body(content),
         Err(e) => {
-            log::error!("Failed to read legal.txt: {}", e);
+            tracing::error!("Failed to read legal.txt");
+            sentry::capture_error(&e);
             HttpResponse::InternalServerError().finish()
         }
     }
@@ -31,7 +33,8 @@ async fn frontend_handler(req: HttpRequest) -> impl Responder {
     let html = match std::fs::read_to_string("dist/index.html") {
         Ok(h) => h,
         Err(e) => {
-            log::error!("Failed to read dist/index.html: {}", e);
+            tracing::error!("Failed to read index.html");
+            sentry::capture_error(&e);
             return HttpResponse::InternalServerError()
                 .body("Couldn't prepare frontend HTML.");
         }
@@ -59,8 +62,6 @@ async fn frontend_handler(req: HttpRequest) -> impl Responder {
 }
 
 fn main() -> io::Result<()> {
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
-
     let _guard = sentry::init((
         std::env::var("SENTRY_DSN").unwrap_or("".to_string()),
         sentry::ClientOptions {
@@ -73,15 +74,21 @@ fn main() -> io::Result<()> {
             send_default_pii: false,
             // Capture all HTTP request bodies, regardless of size
             max_request_body_size: sentry::MaxRequestBodySize::Always,
+            enable_logs: true,
             ..Default::default()
         },
     ));
+
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::fmt::layer())
+        .with(sentry::integrations::tracing::layer())
+        .init();
 
     let cfg = config::load_config().expect("Failed to load config.json");
     let cfg = web::Data::new(cfg);
 
     actix_web::rt::System::new().block_on(async {
-        log::info!("Starting cbzViewer on :8080");
+        tracing::info!("Starting CbzViewer on :8080");
 
         HttpServer::new(move || {
             App::new()

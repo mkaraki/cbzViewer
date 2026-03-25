@@ -2,7 +2,6 @@ use std::fs::File;
 use std::io::Read;
 
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
-
 use crate::config::Config;
 use crate::pathutils::{
     apply_cache_headers, check_file_cache, get_content_type, get_extension, get_real_path,
@@ -79,12 +78,12 @@ pub async fn img_handler(
                     builder.content_type(content_type).body(data)
                 }
                 Ok(Err(e)) => {
-                    log::error!("serve_cbz_image error: {}", e);
-                    HttpResponse::InternalServerError().body(e)
+                    sentry::capture_message(&e, sentry::Level::Error);
+                    HttpResponse::InternalServerError().into()
                 }
                 Err(e) => {
-                    log::error!("blocking task error: {}", e);
-                    HttpResponse::InternalServerError().finish()
+                    sentry::capture_error(&e);
+                    HttpResponse::InternalServerError().into()
                 }
             }
         }
@@ -96,6 +95,8 @@ pub async fn img_handler(
 /// Rejects absolute paths, paths containing `..` components, and any
 /// platform-specific absolute prefixes (e.g. Windows drive letters).
 fn is_safe_zip_path(path: &str) -> bool {
+    tracing::trace!("CALL is_safe_zip_path: {}", path);
+
     // Reject clearly unsafe patterns early.
     if path.starts_with('/') || path.starts_with('\\') {
         return false;
@@ -118,11 +119,14 @@ fn is_safe_zip_path(path: &str) -> bool {
 
 /// Reads an image entry from a CBZ archive and optionally resizes it.
 /// Returns `(image_bytes, content_type)`.
+#[tracing::instrument]
 fn serve_cbz_image(
     cbz_path: &str,
     image_name: &str,
     size: i32,
 ) -> Result<(Vec<u8>, &'static str), String> {
+    tracing::trace!("CALL img::serve_cbz_image({}, {}, {})", cbz_path, image_name, size);
+
     let file = File::open(cbz_path).map_err(|e| format!("Failed to open CBZ: {}", e))?;
     let mut archive =
         zip::ZipArchive::new(file).map_err(|e| format!("Failed to read CBZ: {}", e))?;
@@ -159,7 +163,10 @@ fn serve_cbz_image(
 
 /// Resizes `img` to `target_width` pixels wide, preserving aspect ratio,
 /// using the Lanczos3 filter from `fast_image_resize`.
+#[tracing::instrument]
 fn resize_image(img: image::DynamicImage, target_width: u32) -> image::DynamicImage {
+    tracing::trace!("CALL img::resize_image(img, {})", target_width);
+
     use fast_image_resize::{
         images::{Image, ImageRef},
         FilterType, PixelType, ResizeAlg, ResizeOptions, Resizer,
@@ -187,7 +194,8 @@ fn resize_image(img: image::DynamicImage, target_width: u32) -> image::DynamicIm
     let src = match ImageRef::new(src_width, src_height, raw, PixelType::U8x4) {
         Ok(s) => s,
         Err(e) => {
-            log::error!("fast_image_resize ImageRef error: {}", e);
+            sentry::capture_error(&e);
+            tracing::error!("fast_image_resize ImageRef error");
             return img;
         }
     };
@@ -199,7 +207,8 @@ fn resize_image(img: image::DynamicImage, target_width: u32) -> image::DynamicIm
         .resize_alg(ResizeAlg::Convolution(FilterType::Lanczos3));
 
     if let Err(e) = resizer.resize(&src, &mut dst, &options) {
-        log::error!("fast_image_resize resize error: {}", e);
+        sentry::capture_error(&e);
+        tracing::error!("fast_image_resize resize error");
         return img;
     }
 
@@ -210,7 +219,10 @@ fn resize_image(img: image::DynamicImage, target_width: u32) -> image::DynamicIm
 }
 
 /// Encodes a `DynamicImage` as JPEG with the given quality (0–100).
+#[tracing::instrument]
 fn encode_jpeg(img: &image::DynamicImage, quality: u8) -> Result<Vec<u8>, String> {
+    tracing::trace!("CALL img::encode_jpeg(img, {})", quality);
+
     let mut output = Vec::new();
     let mut encoder = image::codecs::jpeg::JpegEncoder::new_with_quality(&mut output, quality);
     encoder

@@ -54,7 +54,7 @@ pub async fn list_handler(
             return HttpResponse::NotFound().finish();
         }
         Err(e) => {
-            log::error!("read_dir {}: {}", real_path.display(), e);
+            sentry::capture_error(&e);
             return HttpResponse::InternalServerError().finish();
         }
     };
