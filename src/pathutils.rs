@@ -45,13 +45,13 @@ pub fn get_parent_dir(real_path: &Path, config: &Config) -> (bool, String) {
         Err(_) => return (false, String::new()),
     };
 
-    let real_path_canonical = Path::new(real_path).canonicalize();
+    let real_path_canonical = real_path.canonicalize();
     if real_path_canonical.is_err() {
         tracing::warn!("Failed to canonicalize real_path (user specified path)");
         return (false, String::new());
     }
 
-    if real_path.canonicalize().unwrap() == base {
+    if real_path_canonical.unwrap() == base {
         return (false, String::new());
     }
 
