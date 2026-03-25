@@ -70,6 +70,10 @@ pub async fn dir_thumb_handler(
     // Walk the directory to find the first supported comic file.
     let thumb_path = find_first_comic_in_dir(&real_path, &client_path);
 
+    if thumb_path == "" {
+        return HttpResponse::NotFound().finish();
+    }
+
     let location = format!("/api/thumb?path={}", urlencoding::encode(&thumb_path));
 
     let mut resp = HttpResponse::MovedPermanently();
