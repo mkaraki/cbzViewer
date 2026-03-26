@@ -256,7 +256,7 @@ fn resize_image(img: image::DynamicImage, target_width: u32) -> image::DynamicIm
     tracing::trace!("CALL img::resize_image(img, {})", target_width);
 
     use fast_image_resize::{
-        images::{Image, ImageRef},
+        images::{Image},
         FilterType, PixelType, ResizeAlg, ResizeOptions, Resizer,
     };
 
@@ -277,16 +277,7 @@ fn resize_image(img: image::DynamicImage, target_width: u32) -> image::DynamicIm
     let target_height = target_height.max(1);
 
     let rgba = img.to_rgba8();
-    let raw = rgba.as_raw();
-
-    let src = match ImageRef::new(src_width, src_height, raw, PixelType::U8x4) {
-        Ok(s) => s,
-        Err(e) => {
-            sentry::capture_error(&e);
-            tracing::error!("fast_image_resize ImageRef error");
-            return img;
-        }
-    };
+    drop(img);
 
     let mut dst = Image::new(target_width, target_height, PixelType::U8x4);
 
@@ -294,14 +285,21 @@ fn resize_image(img: image::DynamicImage, target_width: u32) -> image::DynamicIm
     let options = ResizeOptions::new()
         .resize_alg(ResizeAlg::Convolution(FilterType::Lanczos3));
 
-    if let Err(e) = resizer.resize(&src, &mut dst, &options) {
-        sentry::capture_error(&e);
+    let res = resizer.resize(&rgba, &mut dst, &options);
+    if res.is_err() {
+        sentry::capture_error(&res.err().unwrap());
         tracing::error!("fast_image_resize resize error");
-        return img;
+        return rgba.into();
     }
 
-    let dst_rgba = image::RgbaImage::from_raw(target_width, target_height, dst.into_vec())
-        .expect("resize produced invalid buffer size");
+    let dst_rgba = image::RgbaImage::from_raw(target_width, target_height, dst.into_vec());
+    if dst_rgba.is_none() {
+        sentry::capture_message("Failed to create RgbaImage from resized bytes", sentry::Level::Error);
+        tracing::error!("Failed to create Image Object from resized RgbaImage bytes");
+        return rgba.into();
+    }
+    let dst_rgba = dst_rgba.unwrap();
+    drop(rgba);
 
     image::DynamicImage::ImageRgba8(dst_rgba)
 }
