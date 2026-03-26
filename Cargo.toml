@@ -12,10 +12,10 @@ actix-web = { version = "4", default-features = false, features = ["macros", "un
 actix-files = "0.6"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-zip = "2.3"
+zip = "8.4"
 image = { version = "0.25", default-features = false, features = ["jpeg", "png", "gif", "webp"] }
-fast_image_resize = "4"
-quick-xml = { version = "0.37", features = ["serialize"] }
+fast_image_resize = "6"
+quick-xml = { version = "0.39", features = ["serialize"] }
 natord = "1"
 httpdate = "1"
 urlencoding = "2"
