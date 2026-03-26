@@ -178,13 +178,12 @@ fn find_first_comic_in_dir(real_dir: &Path, base_client_path: &str) -> String {
         Err(_) => return String::new(),
     };
 
-    let mut names: Vec<_> = entries
-        .flatten()
-        .map(|e| e.file_name().to_string_lossy().to_string())
-        .collect();
-    names.sort_by(|a, b| natord::compare(a, b));
-
-    for name in names {
+    for e in entries {
+        if e.is_err() {
+            continue;
+        }
+        let e = e.unwrap();
+        let name = &e.file_name().to_string_lossy().to_string();
         let child = real_dir.join(&name);
         let child_client = format!("{}/{}", base_client_path.trim_end_matches('/'), name);
 
@@ -229,13 +228,13 @@ fn find_first_comic_in_dir(real_dir: &Path, base_client_path: &str) -> String {
 #[tracing::instrument]
 fn find_first_comic_recursive(real_dir: &Path, client_prefix: &str) -> Option<String> {
     let entries = std::fs::read_dir(real_dir).ok()?;
-    let mut names: Vec<_> = entries
-        .flatten()
-        .map(|e| e.file_name().to_string_lossy().to_string())
-        .collect();
-    names.sort_by(|a, b| natord::compare(a, b));
 
-    for name in names {
+    for e in entries {
+        if e.is_err() {
+            continue;
+        }
+        let e = e.unwrap();
+        let name = &e.file_name().to_string_lossy().to_string();
         let child = real_dir.join(&name);
         let child_client = format!("{}/{}", client_prefix.trim_end_matches('/'), name);
 
