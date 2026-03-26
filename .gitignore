@@ -1,6 +1,5 @@
 /config.json
-/cbzViewer
-/cbzViewer.exe
+/target/
 /books/*
 !/books/tests
 /books/tests/**/*.png
