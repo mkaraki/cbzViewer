@@ -15,19 +15,19 @@
     "@sentry/vue": "^10.45.0",
     "bootstrap": "5.3.8",
     "vue": "^3.5.30",
-    "vue-router": "^4.6.4"
+    "vue-router": "^5.0.4"
   },
   "devDependencies": {
-    "@sentry/vite-plugin": "^4.9.1",
+    "@sentry/vite-plugin": "^5.1.1",
     "@tsconfig/node22": "^22.0.5",
     "@types/bootstrap": "^5.2.10",
     "@types/node": "^25.5.0",
     "@vitejs/plugin-vue": "^6.0.5",
-    "@vue/tsconfig": "^0.8.1",
+    "@vue/tsconfig": "^0.9.1",
     "cypress": "^15.12.0",
     "sass": "^1.98.0",
-    "typescript": "~5.9.3",
-    "vite": "^7.3.1",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.2",
     "vite-plugin-vue-devtools": "^8.1.1",
     "vue-tsc": "^3.2.6"
   }
