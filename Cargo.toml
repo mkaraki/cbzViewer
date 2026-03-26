@@ -19,8 +19,8 @@ quick-xml = { version = "0.39", features = ["serialize"] }
 natord = "1"
 httpdate = "1"
 urlencoding = "2"
-sentry = { version = "0.47.0", default-features = false, features = ["actix", "tracing", "contexts", "panic", "reqwest", "rustls", "logs"] }
-tracing-subscriber = "0.3.23"
+sentry = { version = "0.47.0", default-features = false, features = ["actix", "tracing", "contexts", "panic", "reqwest", "native-tls", "logs"] }
+tracing-subscriber = { version = "0.3.23", features = ["std", "env-filter"] }
 tracing = "0.1.44"
 log = "0.4.29"
 
