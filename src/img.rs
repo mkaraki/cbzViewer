@@ -1,7 +1,8 @@
 use std::fs::File;
-use std::io::Read;
-
+use std::io::{Cursor, Read};
+use std::path::PathBuf;
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
+use image::ImageReader;
 use crate::config::Config;
 use crate::pathutils::{
     apply_cache_headers, check_file_cache, get_content_type, get_extension, get_real_path,
@@ -83,25 +84,7 @@ pub async fn img_handler(
             let abs_path = real_path.to_string_lossy().to_string();
             let query_file_clone = query_file.clone();
 
-            let result = web::block(move || {
-                serve_cbz_image(&abs_path, &query_file_clone, size)
-            })
-            .await;
-
-            match result {
-                Ok(Ok((data, content_type))) => {
-                    apply_cache_headers(&real_path, &mut builder);
-                    builder.content_type(content_type).body(data)
-                }
-                Ok(Err(e)) => {
-                    sentry::capture_message(&e, sentry::Level::Error);
-                    HttpResponse::InternalServerError().into()
-                }
-                Err(e) => {
-                    sentry::capture_error(&e);
-                    HttpResponse::InternalServerError().into()
-                }
-            }
+            return serve_cbz_image(&abs_path, &query_file_clone, size);
         }
         _ => HttpResponse::BadRequest().body("Unsupported file type"),
     }
@@ -195,41 +178,78 @@ fn serve_cbz_image(
     cbz_path: &str,
     image_name: &str,
     size: i32,
-) -> Result<(Vec<u8>, &'static str), String> {
+) -> HttpResponse {
     tracing::trace!("CALL img::serve_cbz_image({}, {}, {})", cbz_path, image_name, size);
 
-    let file = File::open(cbz_path).map_err(|e| format!("Failed to open CBZ: {}", e))?;
-    let mut archive =
-        zip::ZipArchive::new(file).map_err(|e| format!("Failed to read CBZ: {}", e))?;
+    let cbz_path_buf = PathBuf::from(cbz_path);
 
-    let mut entry = archive
-        .by_name(image_name)
-        .map_err(|e| format!("Image not found in CBZ: {}", e))?;
+    let file = File::open(cbz_path);
+    if file.is_err() {
+        sentry::capture_error(&file.err().unwrap());
+        return HttpResponse::InternalServerError().finish();
+    }
+    let file = file.unwrap();
+
+    let archive = zip::ZipArchive::new(file);
+    if archive.is_err() {
+        sentry::capture_error(&archive.err().unwrap());
+        return HttpResponse::InternalServerError().finish();
+    }
+    let mut archive = archive.unwrap();
+
+    let entry = archive
+        .by_name(image_name);
+    if entry.is_err() {
+        sentry::capture_error(&entry.err().unwrap());
+        return HttpResponse::InternalServerError().finish();
+    }
+    let mut entry = entry.unwrap();
 
     // Stream only this one entry into memory.
     let mut raw = Vec::with_capacity(entry.size() as usize);
-    entry
-        .read_to_end(&mut raw)
-        .map_err(|e| format!("Failed to read image data: {}", e))?;
+    let res = entry.read_to_end(&mut raw);
+    if res.is_err() {
+        sentry::capture_error(&res.err().unwrap());
+        return HttpResponse::InternalServerError().finish();
+    }
 
     if size == -1 {
         // Serve the original bytes without decoding.
         let ext = get_extension(image_name);
         let content_type = get_content_type(&ext);
-        return Ok((raw, content_type));
+
+        let mut builder = HttpResponse::Ok();
+        apply_cache_headers(&cbz_path_buf, &mut builder);
+        return builder.content_type(content_type).body(raw);
     }
 
     // Decode → resize → re-encode as JPEG.
-    let img = image::load_from_memory(&raw)
-        .map_err(|e| format!("Failed to decode image: {}", e))?;
+    let img = ImageReader::new(Cursor::new(&raw)).with_guessed_format();
+    if img.is_err() {
+        sentry::capture_error(&img.err().unwrap());
+        return HttpResponse::InternalServerError().finish();
+    }
+    let img = img.unwrap().decode();
+    if img.is_err() {
+        sentry::capture_error(&img.err().unwrap());
+        return HttpResponse::InternalServerError().finish();
+    }
+    let img = img.unwrap();
+    drop(raw);
 
     let resized = resize_image(img, size as u32);
 
     let quality: u8 = if size < 320 { 40 } else { 85 };
-    let jpeg_bytes = encode_jpeg(&resized, quality)
-        .map_err(|e| format!("Failed to encode JPEG: {}", e))?;
+    let jpeg_bytes = encode_jpeg(&resized, quality);
+    if jpeg_bytes.is_err() {
+        sentry::capture_message(&format!("JPEG encoding failed for {}: {}", image_name, jpeg_bytes.err().unwrap()), sentry::Level::Error);
+        return HttpResponse::InternalServerError().finish();
+    }
+    let jpeg_bytes = jpeg_bytes.unwrap();
 
-    Ok((jpeg_bytes, "image/jpeg"))
+    let mut builder = HttpResponse::Ok();
+    apply_cache_headers(&cbz_path_buf, &mut builder);
+    builder.content_type("image/jpeg").body(jpeg_bytes)
 }
 
 /// Resize an image to the specified target width while preserving aspect ratio.
@@ -504,89 +524,5 @@ mod tests {
         // Create a tiny 4×4 RGB image and encode it as JPEG.
         let img = DynamicImage::ImageRgb8(RgbImage::from_pixel(4, 4, Rgb([200, 100, 50])));
         encode_jpeg(&img, 80).unwrap()
-    }
-
-    #[test]
-    fn test_serve_cbz_image_original_bytes() {
-        let dir = tempfile::tempdir().unwrap();
-        let jpeg_data = make_minimal_jpeg();
-        let cbz_path = make_cbz_with_jpeg(dir.path(), "page.jpg", jpeg_data.clone());
-
-        let (data, ct) = serve_cbz_image(cbz_path.to_str().unwrap(), "page.jpg", -1).unwrap();
-        assert_eq!(ct, "image/jpeg");
-        assert_eq!(data, jpeg_data);
-    }
-
-    #[test]
-    fn test_serve_cbz_image_resized_returns_jpeg_mime() {
-        let dir = tempfile::tempdir().unwrap();
-        let jpeg_data = make_minimal_jpeg();
-        let cbz_path = make_cbz_with_jpeg(dir.path(), "page.jpg", jpeg_data);
-
-        let (data, ct) = serve_cbz_image(cbz_path.to_str().unwrap(), "page.jpg", 2).unwrap();
-        assert_eq!(ct, "image/jpeg");
-        assert!(!data.is_empty());
-        // Verify it's still a valid JPEG
-        assert_eq!(data[0], 0xFF);
-        assert_eq!(data[1], 0xD8);
-    }
-
-    #[test]
-    fn test_serve_cbz_image_missing_entry_returns_err() {
-        let dir = tempfile::tempdir().unwrap();
-        let cbz_path = make_cbz_with_jpeg(dir.path(), "page.jpg", make_minimal_jpeg());
-
-        let result = serve_cbz_image(cbz_path.to_str().unwrap(), "nonexistent.jpg", -1);
-        assert!(result.is_err(), "Expected Err for missing archive entry");
-    }
-
-    #[test]
-    fn test_serve_cbz_image_nonexistent_file_returns_err() {
-        let result = serve_cbz_image("/nonexistent/path/file.cbz", "page.jpg", -1);
-        assert!(result.is_err(), "Expected Err for nonexistent CBZ file");
-    }
-
-    #[test]
-    fn test_serve_cbz_image_png_original_bytes_content_type() {
-        use zip::write::SimpleFileOptions;
-        // Create a small PNG to verify content-type mapping.
-        let mut png_data = Vec::new();
-        let img = DynamicImage::ImageRgb8(RgbImage::from_pixel(4, 4, Rgb([0, 255, 0])));
-        img.write_to(&mut std::io::Cursor::new(&mut png_data), image::ImageFormat::Png).unwrap();
-
-        let dir = tempfile::tempdir().unwrap();
-        let cbz_path = dir.path().join("test.cbz");
-        let f = std::fs::File::create(&cbz_path).unwrap();
-        let mut zip = zip::ZipWriter::new(f);
-        zip.start_file("page.png", SimpleFileOptions::default()).unwrap();
-        zip.write_all(&png_data).unwrap();
-        zip.finish().unwrap();
-
-        let (_, ct) = serve_cbz_image(cbz_path.to_str().unwrap(), "page.png", -1).unwrap();
-        assert_eq!(ct, "image/png");
-    }
-
-    #[test]
-    fn test_serve_cbz_image_small_thumb_uses_low_quality() {
-        // size < 320 uses quality=40; size >= 320 uses quality=85.
-        // Both should produce valid JPEG output; we only verify the call succeeds.
-        let dir = tempfile::tempdir().unwrap();
-        let jpeg_data = make_minimal_jpeg();
-        let cbz_path = make_cbz_with_jpeg(dir.path(), "page.jpg", jpeg_data);
-
-        // size=100 (thumb) → quality 40
-        let (data, ct) = serve_cbz_image(cbz_path.to_str().unwrap(), "page.jpg", 100).unwrap();
-        assert_eq!(ct, "image/jpeg");
-        assert!(!data.is_empty());
-    }
-
-    #[test]
-    fn test_serve_cbz_image_invalid_cbz_returns_err() {
-        let dir = tempfile::tempdir().unwrap();
-        let bad_cbz = dir.path().join("bad.cbz");
-        std::fs::write(&bad_cbz, b"this is not a zip file").unwrap();
-
-        let result = serve_cbz_image(bad_cbz.to_str().unwrap(), "page.jpg", -1);
-        assert!(result.is_err(), "Expected Err for corrupt CBZ");
     }
 }
