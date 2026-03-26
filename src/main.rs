@@ -143,8 +143,13 @@ fn main() -> io::Result<()> {
     ));
 
     tracing_subscriber::registry()
-        .with(tracing_subscriber::fmt::layer())
         .with(sentry::integrations::tracing::layer())
+        .with(
+            tracing_subscriber::fmt::layer()
+                .with_filter(
+                    tracing_subscriber::EnvFilter::from_default_env()
+                )
+        )
         .init();
 
     let cfg = config::load_config().expect("Failed to load config.json");
