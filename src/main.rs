@@ -43,6 +43,12 @@ async fn legal_handler() -> impl Responder {
         .body(content)
 }
 
+async fn health_handler() -> impl Responder {
+    HttpResponse::Ok()
+        .content_type("text/plain; charset=utf-8")
+        .body("OK")
+}
+
 /// Serves the single-page application's `index.html`, replacing runtime template placeholders.
 ///
 /// Returns `404 Not Found` for requests to `/favicon.ico` and `/robots.txt`. If `dist/index.html`
@@ -173,6 +179,7 @@ fn main() -> io::Result<()> {
                 .route("/api/thumb", web::get().to(thumb::thumb_handler))
                 .route("/api/thumb_dir", web::get().to(thumb::dir_thumb_handler))
                 .route("/legal", web::get().to(legal_handler))
+                .route("/healthz", web::get().to(health_handler))
                 .service(afs::Files::new("/assets", "dist/assets/").prefer_utf8(true))
                 .default_service(web::get().to(frontend_handler))
         })
