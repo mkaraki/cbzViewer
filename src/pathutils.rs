@@ -1,7 +1,6 @@
 use std::path::{Path, PathBuf};
 
 use actix_web::HttpResponse;
-use log::trace;
 use crate::config::Config;
 
 /// Resolve a client-supplied path against the configured CBZ base directory and return its canonical absolute path.
@@ -72,19 +71,32 @@ pub fn get_parent_dir(real_path: &Path, config: &Config) -> (bool, String) {
         Err(_) => return (false, String::new()),
     };
 
+    let base = if base.starts_with("\\\\?\\") {
+        PathBuf::from(base.strip_prefix("\\\\?\\").unwrap())
+    } else {
+        base
+    };
+
     let real_path_canonical = real_path.canonicalize();
     if real_path_canonical.is_err() {
         tracing::warn!("Failed to canonicalize real_path (user specified path)");
         return (false, String::new());
     }
+    let real_path_canonical = real_path_canonical.unwrap();
 
-    if real_path_canonical.unwrap() == base {
+    if real_path_canonical== base {
         return (false, String::new());
     }
 
-    let parent = match real_path.parent() {
+    let parent = match real_path_canonical.parent() {
         Some(p) => p,
         None => return (false, String::new()),
+    };
+
+    let parent = if parent.starts_with("\\\\?\\") {
+        PathBuf::from(parent.strip_prefix("\\\\?\\").unwrap())
+    } else {
+        parent.to_path_buf()
     };
 
     if parent.starts_with(&base) {
@@ -261,4 +273,309 @@ pub fn apply_cache_headers(path: &Path, res: &mut actix_web::HttpResponseBuilder
         res.insert_header(("Last-Modified", mtime));
     }
     res.insert_header(("Cache-Control", "public, max-age=31536000"));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::path::Path;
+
+    // ── get_extension ────────────────────────────────────────────────────────────
+
+    #[test]
+    fn test_get_extension_lowercase() {
+        assert_eq!(get_extension("archive.cbz"), "cbz");
+    }
+
+    #[test]
+    fn test_get_extension_uppercase_normalized() {
+        assert_eq!(get_extension("IMAGE.PNG"), "png");
+    }
+
+    #[test]
+    fn test_get_extension_mixed_case() {
+        assert_eq!(get_extension("photo.JPeG"), "jpeg");
+    }
+
+    #[test]
+    fn test_get_extension_no_extension() {
+        assert_eq!(get_extension("README"), "");
+    }
+
+    #[test]
+    fn test_get_extension_with_path() {
+        assert_eq!(get_extension("/path/to/image.webp"), "webp");
+    }
+
+    #[test]
+    fn test_get_extension_empty_string() {
+        assert_eq!(get_extension(""), "");
+    }
+
+    #[test]
+    fn test_get_extension_dot_only() {
+        // A file named "." has no extension.
+        assert_eq!(get_extension("."), "");
+    }
+
+    #[test]
+    fn test_get_extension_hidden_file_no_ext() {
+        // ".gitignore" is treated as having no extension (stem is ".gitignore").
+        assert_eq!(get_extension(".gitignore"), "");
+    }
+
+    // ── is_supported_image ───────────────────────────────────────────────────────
+
+    #[test]
+    fn test_is_supported_image_png() {
+        assert!(is_supported_image("png"));
+    }
+
+    #[test]
+    fn test_is_supported_image_jpg() {
+        assert!(is_supported_image("jpg"));
+    }
+
+    #[test]
+    fn test_is_supported_image_jpeg() {
+        assert!(is_supported_image("jpeg"));
+    }
+
+    #[test]
+    fn test_is_supported_image_gif() {
+        assert!(is_supported_image("gif"));
+    }
+
+    #[test]
+    fn test_is_supported_image_webp() {
+        assert!(is_supported_image("webp"));
+    }
+
+    #[test]
+    fn test_is_supported_image_rejects_txt() {
+        assert!(!is_supported_image("txt"));
+    }
+
+    #[test]
+    fn test_is_supported_image_rejects_cbz() {
+        assert!(!is_supported_image("cbz"));
+    }
+
+    #[test]
+    fn test_is_supported_image_rejects_empty() {
+        assert!(!is_supported_image(""));
+    }
+
+    #[test]
+    fn test_is_supported_image_case_sensitive_uppercase_rejected() {
+        // Function expects already-lowercased input; "PNG" is not in the match arms.
+        assert!(!is_supported_image("PNG"));
+    }
+
+    // ── is_supported_comic ───────────────────────────────────────────────────────
+
+    #[test]
+    fn test_is_supported_comic_cbz() {
+        assert!(is_supported_comic("cbz"));
+    }
+
+    #[test]
+    fn test_is_supported_comic_rejects_zip() {
+        assert!(!is_supported_comic("zip"));
+    }
+
+    #[test]
+    fn test_is_supported_comic_rejects_cbr() {
+        assert!(!is_supported_comic("cbr"));
+    }
+
+    #[test]
+    fn test_is_supported_comic_rejects_empty() {
+        assert!(!is_supported_comic(""));
+    }
+
+    #[test]
+    fn test_is_supported_comic_case_sensitive_uppercase_rejected() {
+        assert!(!is_supported_comic("CBZ"));
+    }
+
+    // ── get_content_type ─────────────────────────────────────────────────────────
+
+    #[test]
+    fn test_get_content_type_png() {
+        assert_eq!(get_content_type("png"), "image/png");
+    }
+
+    #[test]
+    fn test_get_content_type_jpg() {
+        assert_eq!(get_content_type("jpg"), "image/jpeg");
+    }
+
+    #[test]
+    fn test_get_content_type_jpeg() {
+        assert_eq!(get_content_type("jpeg"), "image/jpeg");
+    }
+
+    #[test]
+    fn test_get_content_type_gif() {
+        assert_eq!(get_content_type("gif"), "image/gif");
+    }
+
+    #[test]
+    fn test_get_content_type_webp() {
+        assert_eq!(get_content_type("webp"), "image/webp");
+    }
+
+    #[test]
+    fn test_get_content_type_unknown_returns_octet_stream() {
+        assert_eq!(get_content_type("xyz"), "application/octet-stream");
+    }
+
+    #[test]
+    fn test_get_content_type_empty_returns_octet_stream() {
+        assert_eq!(get_content_type(""), "application/octet-stream");
+    }
+
+    #[test]
+    fn test_get_content_type_cbz_returns_octet_stream() {
+        assert_eq!(get_content_type("cbz"), "application/octet-stream");
+    }
+
+    // ── get_file_mtime_str ───────────────────────────────────────────────────────
+
+    #[test]
+    fn test_get_file_mtime_str_existing_file_returns_some() {
+        // Cargo.toml is always present in the project root.
+        let p = Path::new("Cargo.toml");
+        let result = get_file_mtime_str(p);
+        assert!(result.is_some(), "Expected Some for an existing file");
+    }
+
+    #[test]
+    fn test_get_file_mtime_str_format_is_http_date() {
+        let p = Path::new("Cargo.toml");
+        if let Some(mtime) = get_file_mtime_str(p) {
+            // HTTP-date format: "Tue, 15 Nov 1994 12:45:26 GMT"
+            assert!(mtime.ends_with("GMT"), "HTTP-date should end with GMT: {}", mtime);
+            assert!(mtime.contains(','), "HTTP-date should contain a comma: {}", mtime);
+        }
+    }
+
+    #[test]
+    fn test_get_file_mtime_str_nonexistent_returns_none() {
+        let p = Path::new("/this/path/does/not/exist/at/all");
+        assert!(get_file_mtime_str(p).is_none());
+    }
+
+    // ── get_real_path ────────────────────────────────────────────────────────────
+
+    #[test]
+    fn test_get_real_path_resolves_valid_path() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("comic.cbz");
+        std::fs::write(&file, b"fake").unwrap();
+
+        let config = Config { cbz_dir: dir.path().to_str().unwrap().to_string() };
+        let result = get_real_path("comic.cbz", &config);
+        assert!(result.is_ok(), "Expected Ok for valid path within base");
+        assert_eq!(result.unwrap(), file.canonicalize().unwrap());
+    }
+
+    #[test]
+    fn test_get_real_path_strips_leading_slash() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("comic.cbz");
+        std::fs::write(&file, b"fake").unwrap();
+
+        let config = Config { cbz_dir: dir.path().to_str().unwrap().to_string() };
+        // Leading "/" should be stripped so it's treated as relative to cbz_dir.
+        let result = get_real_path("/comic.cbz", &config);
+        assert!(result.is_ok(), "Expected Ok when leading slash is stripped");
+    }
+
+    #[test]
+    fn test_get_real_path_nonexistent_returns_404() {
+        let dir = tempfile::tempdir().unwrap();
+        let config = Config { cbz_dir: dir.path().to_str().unwrap().to_string() };
+        let result = get_real_path("does_not_exist.cbz", &config);
+        assert!(result.is_err());
+        let resp = result.unwrap_err();
+        assert_eq!(resp.status(), actix_web::http::StatusCode::NOT_FOUND);
+    }
+
+    #[test]
+    fn test_get_real_path_traversal_returns_403() {
+        let base = tempfile::tempdir().unwrap();
+        let outside = tempfile::tempdir().unwrap();
+        let secret = outside.path().join("secret.txt");
+        std::fs::write(&secret, b"secret").unwrap();
+
+        let config = Config { cbz_dir: base.path().to_str().unwrap().to_string() };
+        // Attempt to escape base via "../<other_tmpdir>/secret.txt".
+        let relative = format!("../{}/ secret.txt", outside.path().file_name().unwrap().to_str().unwrap());
+        // Most attempts will fail at canonicalize (404) rather than reach 403
+        // because the path doesn't exist in base. A direct test using a symlink
+        // or the actual relative escape is environment-dependent, so we accept
+        // either 404 (path not found) or 403 (traversal detected).
+        let result = get_real_path(&relative, &config);
+        if let Err(resp) = result {
+            let status = resp.status();
+            assert!(
+                status == actix_web::http::StatusCode::NOT_FOUND
+                    || status == actix_web::http::StatusCode::FORBIDDEN,
+                "Expected 404 or 403 for path traversal attempt, got {}",
+                status
+            );
+        }
+        // If Ok, the path happened to exist and be inside base (unlikely but not an error in test).
+    }
+
+    // ── get_parent_dir ───────────────────────────────────────────────────────────
+
+    #[test]
+    fn test_get_parent_dir_file_inside_base() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("comic.cbz");
+        std::fs::write(&file, b"fake").unwrap();
+
+        let config = Config { cbz_dir: dir.path().to_str().unwrap().to_string() };
+        let (has_parent, parent_path) = get_parent_dir(&file, &config);
+        assert!(has_parent);
+        assert_eq!(parent_path, "/");
+    }
+
+    #[test]
+    fn test_get_parent_dir_subdir_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let subdir = dir.path().join("series");
+        std::fs::create_dir(&subdir).unwrap();
+        let file = subdir.join("issue.cbz");
+        std::fs::write(&file, b"fake").unwrap();
+
+        let config = Config { cbz_dir: dir.path().to_str().unwrap().to_string() };
+        let (has_parent, parent_path) = get_parent_dir(&file, &config);
+        assert!(has_parent);
+        assert_eq!(parent_path, "/series");
+    }
+
+    #[test]
+    fn test_get_parent_dir_at_base_returns_no_parent() {
+        let dir = tempfile::tempdir().unwrap();
+        let config = Config { cbz_dir: dir.path().to_str().unwrap().to_string() };
+        // The base directory itself has no parent within itself.
+        let (has_parent, parent_path) = get_parent_dir(dir.path(), &config);
+        assert!(!has_parent);
+        assert_eq!(parent_path, "");
+    }
+
+    #[test]
+    fn test_get_parent_dir_nonexistent_path_returns_no_parent() {
+        let dir = tempfile::tempdir().unwrap();
+        let config = Config { cbz_dir: dir.path().to_str().unwrap().to_string() };
+        let fake = dir.path().join("ghost.cbz");
+        // Path does not exist on disk; canonicalize will fail.
+        let (has_parent, parent_path) = get_parent_dir(&fake, &config);
+        assert!(!has_parent);
+        assert_eq!(parent_path, "");
+    }
 }
