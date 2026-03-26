@@ -5,5 +5,6 @@ accepted = [
     "BSD-3-Clause",
     "Zlib",
     "ISC",
-    "MIT-0"
+    "MIT-0",
+    "bzip2-1.0.6",
 ]
