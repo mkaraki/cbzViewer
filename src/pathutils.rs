@@ -1,7 +1,6 @@
 use std::path::{Path, PathBuf};
 
 use actix_web::HttpResponse;
-use log::trace;
 use crate::config::Config;
 
 /// Resolve a client-supplied path against the configured CBZ base directory and return its canonical absolute path.
@@ -72,19 +71,32 @@ pub fn get_parent_dir(real_path: &Path, config: &Config) -> (bool, String) {
         Err(_) => return (false, String::new()),
     };
 
+    let base = if base.starts_with("\\\\?\\") {
+        PathBuf::from(base.strip_prefix("\\\\?\\").unwrap())
+    } else {
+        base
+    };
+
     let real_path_canonical = real_path.canonicalize();
     if real_path_canonical.is_err() {
         tracing::warn!("Failed to canonicalize real_path (user specified path)");
         return (false, String::new());
     }
+    let real_path_canonical = real_path_canonical.unwrap();
 
-    if real_path_canonical.unwrap() == base {
+    if real_path_canonical== base {
         return (false, String::new());
     }
 
-    let parent = match real_path.parent() {
+    let parent = match real_path_canonical.parent() {
         Some(p) => p,
         None => return (false, String::new()),
+    };
+
+    let parent = if parent.starts_with("\\\\?\\") {
+        PathBuf::from(parent.strip_prefix("\\\\?\\").unwrap())
+    } else {
+        parent.to_path_buf()
     };
 
     if parent.starts_with(&base) {
