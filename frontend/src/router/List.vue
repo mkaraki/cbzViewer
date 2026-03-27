@@ -103,11 +103,11 @@ watch(data, async () => {
 }, { immediate: true });
 
 function unloadQueuedImages() {
-  document.querySelectorAll('.loaded .queue-img').forEach((e) => {
+  document.querySelectorAll('.loaded.queue-img').forEach((e) => {
     const el = e as HTMLImageElement;
 
     URL.revokeObjectURL(el.src);
-    el.classList.remove('loaded')
+    el.classList.remove('loaded');
   });
 }
 
