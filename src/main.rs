@@ -3,6 +3,11 @@ use actix_files as afs;
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use tracing_subscriber::prelude::*;
 
+use mimalloc::MiMalloc;
+
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
+
 mod config;
 mod img;
 mod list;

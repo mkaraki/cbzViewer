@@ -5,3 +5,4 @@
 /books/tests/**/*.png
 /books/tests/**/*.jpg
 /.env
+/dist
