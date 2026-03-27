@@ -42,7 +42,10 @@ async function loadQueuedImage(imgElement: HTMLImageElement) {
         }
       });
 
-      if (!response.ok) throw new Error('Network response was not ok');
+      if (!response.ok) {
+        imgElement.src = '/assets/error.jpg';
+        throw new Error('Network response was not ok');
+      }
 
       // Convert the raw response into a local browser Blob URL
       const blob = await response.blob();
@@ -51,6 +54,7 @@ async function loadQueuedImage(imgElement: HTMLImageElement) {
       imgElement.classList.add('loaded');
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return;
+      imgElement.src = '/assets/error.jpg';
       console.error("Failed to load thumbnail:", error);
     }
   });
@@ -108,6 +112,7 @@ function unloadQueuedImages() {
     const el = e as HTMLImageElement;
 
     URL.revokeObjectURL(el.src);
+    el.src = '/assets/loading.jpg';
     el.classList.remove('loaded');
   });
 }
@@ -138,12 +143,12 @@ onBeforeUnmount(onBeforeUnmountFunction);
           <div v-for="item in data['items']" :key="item.path" class="item">
             <template v-if="item['isDir']">
               <router-link :to="`/list?path=${ encodeURIComponent(item['path']) }`">
-                <img :alt="`Thumbnail of ${ item['name'] }`" src="" :data-src="`/api/thumb_dir?path=${ encodeURIComponent(item['path'])}`" class="thumb queue-img" loading="lazy">
+                <img :alt="`Thumbnail of ${ item['name'] }`" src="/assets/loading.jpg" :data-src="`/api/thumb_dir?path=${ encodeURIComponent(item['path'])}`" class="thumb queue-img" loading="lazy">
               </router-link>
             </template>
             <template v-else>
               <router-link :to="`/read?path=${ encodeURIComponent(item['path']) }`">
-                <img :alt="`Thumbnail of ${ item['name'] }`" src="" :data-src="`/api/thumb?path=${ encodeURIComponent(item['path'])}`" class="thumb queue-img" loading="lazy">
+                <img :alt="`Thumbnail of ${ item['name'] }`" src="/assets/loading.jpg" :data-src="`/api/thumb?path=${ encodeURIComponent(item['path'])}`" class="thumb queue-img" loading="lazy">
               </router-link>
             </template>
             <div class="card-body">
