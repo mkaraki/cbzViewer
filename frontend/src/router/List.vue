@@ -94,6 +94,7 @@ function resetThumbnailBatch() {
 
 watch(() => props.path, () => {
   resetThumbnailBatch();
+  unloadQueuedImages();
   funcOnBeforeMount();
 })
 
