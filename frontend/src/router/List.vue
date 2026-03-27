@@ -32,7 +32,7 @@ async function loadQueuedImage(imgElement: HTMLImageElement) {
     if (!imgElement.isConnected) return;
 
     try {
-      // The queue ensures only 4 of these fetches are ever running at once
+      // The queue ensures only limited number of these fetches are ever running at once
       const traceData = Sentry.getTraceData();
       const response = await fetch(src, {
         signal: thumbnailBatch.signal,
