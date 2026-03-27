@@ -1,7 +1,8 @@
 <script lang="ts" setup>
-import {onBeforeMount, type Ref, ref, watch} from "vue";
+import {nextTick, onBeforeMount, type Ref, ref, watch} from "vue";
 import * as Sentry from '@sentry/vue';
 import '../style/list.css';
+import PQueue from 'p-queue';
 
 defineOptions({
   name: 'List',
@@ -17,6 +18,45 @@ const props = defineProps({
 // 1: failed/Not found
 // 2: success
 const state = ref(0);
+
+const queue = new PQueue({ concurrency: 2 });
+
+async function loadQueuedImage(imgElement: HTMLImageElement) {
+  const src = imgElement.getAttribute('data-src');
+  if (!src) return;
+
+  // Add the fetch operation to the queue
+  await queue.add(async () => {
+    if (imgElement.classList.contains('loaded')) return; // Skip if already loaded
+
+    try {
+      // The queue ensures only 4 of these fetches are ever running at once
+      const traceData = Sentry.getTraceData();
+      const response = await fetch(src, {
+        headers: {
+          "sentry-trace": traceData['sentry-trace'] ?? '',
+          "baggage": traceData['baggage'] ?? '',
+        }
+      });
+
+      if (!response.ok) throw new Error('Network response was not ok');
+
+      // Convert the raw response into a local browser Blob URL
+      const blob = await response.blob();
+      imgElement.src = URL.createObjectURL(blob);
+
+      imgElement.classList.add('loaded');
+    } catch (error) {
+      console.error("Failed to load thumbnail:", error);
+    }
+  });
+}
+
+async function addQueuedImages() {
+  Array.from(document.getElementsByClassName("queue-img") as HTMLCollectionOf<HTMLImageElement>).forEach(img => {
+    loadQueuedImage(img);
+  });
+}
 
 const funcOnBeforeMount = () => {
   if (state.value !== 2)
@@ -45,6 +85,11 @@ onBeforeMount(funcOnBeforeMount);
 watch(() => props.path, () => {
   funcOnBeforeMount();
 })
+
+watch(data, async () => {
+  await nextTick();
+  await addQueuedImages();
+}, { immediate: true });
 </script>
 
 <template>
@@ -65,18 +110,18 @@ watch(() => props.path, () => {
           <div v-for="item in data['items']" :key="item.path" class="item">
             <template v-if="item['isDir']">
               <router-link :to="`/list?path=${ encodeURIComponent(item['path']) }`">
-                <img :alt="`Thumbnail of ${ item['name'] }`" :src="`/api/thumb_dir?path=${ encodeURIComponent(item['path'])}`" class="thumb" loading="lazy">
+                <img :alt="`Thumbnail of ${ item['name'] }`" src="" :data-src="`/api/thumb_dir?path=${ encodeURIComponent(item['path'])}`" class="thumb queue-img" loading="lazy">
               </router-link>
             </template>
             <template v-else>
               <router-link :to="`/read?path=${ encodeURIComponent(item['path']) }`">
-                <img :alt="`Thumbnail of ${ item['name'] }`" :src="`/api/thumb?path=${ encodeURIComponent(item['path'])}`" class="thumb" loading="lazy">
+                <img :alt="`Thumbnail of ${ item['name'] }`" src="" :data-src="`/api/thumb?path=${ encodeURIComponent(item['path'])}`" class="thumb queue-img" loading="lazy">
               </router-link>
             </template>
             <div class="card-body">
               <template v-if="item['isDir']">
                 <h5 class="card-title">
-                  <router-link :to="`/list?path=${ encodeURIComponent(item['path']) }`">{{ item['name'] }}</router-link>
+                  <router-link :to="`/list?path=${ encodeURIComponent(item['path']) }`">{{ item['name'] }}/</router-link>
                 </h5>
               </template>
               <template v-else>
