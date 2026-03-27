@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {nextTick, onBeforeMount, type Ref, ref, watch} from "vue";
+import {nextTick, onBeforeMount, onBeforeUnmount, type Ref, ref, watch} from "vue";
 import * as Sentry from '@sentry/vue';
 import '../style/list.css';
 import PQueue from 'p-queue';
@@ -20,6 +20,7 @@ const props = defineProps({
 const state = ref(0);
 
 const queue = new PQueue({ concurrency: 2 });
+let thumbnailBatch = new AbortController();
 
 async function loadQueuedImage(imgElement: HTMLImageElement) {
   const src = imgElement.dataset.src;
@@ -28,11 +29,13 @@ async function loadQueuedImage(imgElement: HTMLImageElement) {
   // Add the fetch operation to the queue
   await queue.add(async () => {
     if (imgElement.classList.contains('loaded')) return; // Skip if already loaded
+    if (!imgElement.isConnected) return;
 
     try {
       // The queue ensures only 4 of these fetches are ever running at once
       const traceData = Sentry.getTraceData();
       const response = await fetch(src, {
+        signal: thumbnailBatch.signal,
         headers: {
           "sentry-trace": traceData['sentry-trace'] ?? '',
           "baggage": traceData['baggage'] ?? '',
@@ -47,6 +50,7 @@ async function loadQueuedImage(imgElement: HTMLImageElement) {
 
       imgElement.classList.add('loaded');
     } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
       console.error("Failed to load thumbnail:", error);
     }
   });
@@ -82,7 +86,14 @@ const funcOnBeforeMount = () => {
 
 onBeforeMount(funcOnBeforeMount);
 
+function resetThumbnailBatch() {
+  queue.clear();
+  thumbnailBatch.abort();
+  thumbnailBatch = new AbortController();
+}
+
 watch(() => props.path, () => {
+  resetThumbnailBatch();
   funcOnBeforeMount();
 })
 
@@ -90,6 +101,22 @@ watch(data, async () => {
   await nextTick();
   await addQueuedImages();
 }, { immediate: true });
+
+function unloadQueuedImages() {
+  document.querySelectorAll('.loaded .queue-img').forEach((e) => {
+    const el = e as HTMLImageElement;
+
+    URL.revokeObjectURL(el.src);
+    el.classList.remove('loaded')
+  });
+}
+
+const onBeforeUnmountFunction = () => {
+  resetThumbnailBatch();
+  unloadQueuedImages();
+}
+
+onBeforeUnmount(onBeforeUnmountFunction);
 </script>
 
 <template>
