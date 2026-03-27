@@ -2,7 +2,10 @@ use std::fs::File;
 use std::io::{Cursor, Read};
 use std::path::PathBuf;
 use actix_web::{web, HttpRequest, HttpResponse, Responder};
+use actix_web::body::BodyStream;
+use actix_web::web::Bytes;
 use image::ImageReader;
+use futures::stream;
 use crate::config::Config;
 use crate::pathutils::{
     apply_cache_headers, check_file_cache, get_content_type, get_extension, get_real_path,
@@ -213,14 +216,36 @@ fn serve_cbz_image(
         return HttpResponse::InternalServerError().finish();
     }
 
+    const CHUNK_SIZE: usize = 64 * 1024;
+
     if size == -1 {
         // Serve the original bytes without decoding.
         let ext = get_extension(image_name);
         let content_type = get_content_type(&ext);
 
+        // Convert Vec<u8> to Bytes. This takes ownership and does NOT copy the data.
+        let mut bytes = Bytes::from(raw);
+
+        // (Notice we don't need to drop `image_bytes` here because `Bytes::from`
+        // consumed it and took ownership of the RAM allocation.)
+
+        let mut chunks = Vec::new();
+
+        // Slice the Bytes object into chunks
+        while !bytes.is_empty() {
+            let chunk_len = std::cmp::min(bytes.len(), CHUNK_SIZE);
+
+            // .split_to() is ZERO-COPY! It just creates a cheap pointer to the chunk.
+            let chunk = bytes.split_to(chunk_len);
+            chunks.push(Ok::<_, actix_web::Error>(chunk));
+        }
+
+        // Stream the chunks to Actix
+        let stream = stream::iter(chunks);
+
         let mut builder = HttpResponse::Ok();
         apply_cache_headers(&cbz_path_buf, &mut builder);
-        return builder.content_type(content_type).body(raw);
+        return builder.content_type(content_type).streaming(stream);
     }
 
     // Decode → resize → re-encode as JPEG.
@@ -247,9 +272,29 @@ fn serve_cbz_image(
     }
     let jpeg_bytes = jpeg_bytes.unwrap();
 
+    // Convert Vec<u8> to Bytes. This takes ownership and does NOT copy the data.
+    let mut bytes = Bytes::from(jpeg_bytes);
+
+    // (Notice we don't need to drop `image_bytes` here because `Bytes::from`
+    // consumed it and took ownership of the RAM allocation.)
+
+    let mut chunks = Vec::new();
+
+    // Slice the Bytes object into chunks
+    while !bytes.is_empty() {
+        let chunk_len = std::cmp::min(bytes.len(), CHUNK_SIZE);
+
+        // .split_to() is ZERO-COPY! It just creates a cheap pointer to the chunk.
+        let chunk = bytes.split_to(chunk_len);
+        chunks.push(Ok::<_, actix_web::Error>(chunk));
+    }
+
+    // Stream the chunks to Actix
+    let stream = stream::iter(chunks);
+
     let mut builder = HttpResponse::Ok();
     apply_cache_headers(&cbz_path_buf, &mut builder);
-    builder.content_type("image/jpeg").body(jpeg_bytes)
+    builder.content_type("image/jpeg").streaming(stream)
 }
 
 /// Resize an image to the specified target width while preserving aspect ratio.
