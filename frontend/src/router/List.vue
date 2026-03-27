@@ -22,7 +22,7 @@ const state = ref(0);
 const queue = new PQueue({ concurrency: 2 });
 
 async function loadQueuedImage(imgElement: HTMLImageElement) {
-  const src = imgElement.getAttribute('data-src');
+  const src = imgElement.dataset.src;
   if (!src) return;
 
   // Add the fetch operation to the queue
