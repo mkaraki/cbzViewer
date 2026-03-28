@@ -13,11 +13,12 @@
   <div id="app"></div>
   <script>
     (() => {
-      const htmlElem = document.getElementsByTagName('html')?.[0] ?? undefined;
-      if (htmlElem === undefined) {
-        return;
-      }
-      htmlElem.dataset.bsTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const updateTheme = () => {
+          document.documentElement.dataset.bsTheme = mediaQuery.matches ? 'dark' : 'light';
+      };
+      updateTheme();
+      mediaQuery.addEventListener('change', updateTheme);
     })();
   </script>
   <script src="/src/main.ts" type="module"></script>
