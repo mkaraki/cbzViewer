@@ -85,6 +85,12 @@ if ($parent_path === false) {
     $ret['parentDir'] = $parent_path;
 }
 
-header('Content-type: application/json');
-print json_encode($ret);
+header('Content-Type: application/json');
+$json = json_encode($ret);
+if ($json === false) {
+    http_response_code(500);
+    $transaction->finish();
+    die('Unable to encode json');
+}
+print($json);
 $transaction->finish();

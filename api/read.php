@@ -55,5 +55,11 @@ $ret['pageCnt'] = $comic_data['pageCnt'];
 // ToDo: Parse ComicInfo.xml and get comic title.
 
 header('Content-Type: application/json');
-print(json_encode($ret));
+$json = json_encode($ret);
+if ($json === false) {
+    http_response_code(500);
+    $transaction->finish();
+    die('Unable to encode json');
+}
+print($json);
 $transaction->finish();
