@@ -42,6 +42,7 @@ class CbzFile implements ComicFormat
         }
         
         natsort($pageList);
+        $pageList = array_values($pageList);
         return $pageList;
     }
     
