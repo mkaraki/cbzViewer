@@ -8,6 +8,7 @@ $real_path = get_real_path($path);
 
 if ($real_path === false) {
     http_response_code(400);
+    $transaction->finish();
     die('Invalid path');
 }
 
@@ -15,11 +16,13 @@ $virtual_path = get_virtual_path($real_path);
 
 if ($virtual_path === false) {
     http_response_code(400);
+    $transaction->finish();
     die('Unable to find relative path');
 }
 
 if (!is_file($real_path)) {
     http_response_code(404);
+    $transaction->finish();
     die('Queried directory not found');
 }
 
@@ -29,6 +32,7 @@ $parent_dir = get_parent_if_exists($virtual_path);
 
 if ($parent_dir === false) {
     http_response_code(500);
+    $transaction->finish();
     die('Unexpected error: All files must belongs to a directory');
 }
 
@@ -42,6 +46,7 @@ $ret = [
 $comic_data = get_comic_data($real_path);
 if ($comic_data === false) {
     http_response_code(500);
+    $transaction->finish();
     die('Unable to read comic data. Unsupported file or unable to read.');
 }
 

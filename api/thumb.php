@@ -8,6 +8,7 @@ $real_path = get_real_path($path);
 
 if ($real_path === false) {
     http_response_code(400);
+    $transaction->finish();
     die('Invalid path');
 }
 
@@ -15,11 +16,13 @@ $virtual_path = get_virtual_path($real_path);
 
 if ($virtual_path === false) {
     http_response_code(400);
+    $transaction->finish();
     die('Unable to find relative path');
 }
 
 if (!is_file($real_path)) {
     http_response_code(404);
+    $transaction->finish();
     die('Queried directory not found');
 }
 
@@ -28,11 +31,13 @@ process_last_modified($real_path);
 $comic_data = get_comic_data($real_path);
 if ($comic_data === false) {
     http_response_code(500);
+    $transaction->finish();
     die('Unable to get comic data');
 }
 
 if (count($comic_data['pages']) < 1) {
     http_response_code(404);
+    $transaction->finish();
     die('Page count is 0.');
 }
 

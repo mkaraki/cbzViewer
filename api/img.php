@@ -9,11 +9,13 @@ $path = check_path_query();
 
 if (!isset($_GET['f'])) {
     http_response_code(400);
+    $transaction->finish();
     die('No required parameter found: f');
 }
 $f = trim($_GET['f']);
 if (empty($f)) {
     http_response_code(400);
+    $transaction->finish();
     die('No required parameter found: f. Empty is not allowed.');
 }
 
@@ -23,6 +25,7 @@ $real_path = get_real_path($path);
 
 if ($real_path === false) {
     http_response_code(400);
+    $transaction->finish();
     die('Invalid path');
 }
 
@@ -30,11 +33,13 @@ $virtual_path = get_virtual_path($real_path);
 
 if ($virtual_path === false) {
     http_response_code(400);
+    $transaction->finish();
     die('Unable to find relative path');
 }
 
 if (!is_file($real_path)) {
     http_response_code(404);
+    $transaction->finish();
     die('Queried directory not found');
 }
 
@@ -52,17 +57,20 @@ switch ($extension) {
         $res = $cbz->open($real_path);
         if ($res === false) {
             http_response_code(500);
+            $transaction->finish();
             die('Unable to open cbz file');
         }
         
         if (!$cbz->isFile($f)) {
             http_response_code(404);
+            $transaction->finish();
             die('Internal file is invalid: not found');
         }
 
         $image_content = $cbz->readImage($f);
         if ($image_content === false) {
             http_response_code(500);
+            $transaction->finish();
             die('Internal file is invalid: unable to read');
         }
         
@@ -72,6 +80,7 @@ switch ($extension) {
     }
     default: {
         http_response_code(404);
+        $transaction->finish();
         die('This file is not supported.');
     }
 }
@@ -131,6 +140,7 @@ header('Cache-Control: public, max-age=31536000');
 $res = imagejpeg($image, null, $quality);
 if ($res === false) {
     http_response_code(500);
+    $transaction->finish();
     die('Unable to encode image');
 }
 
