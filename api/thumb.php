@@ -23,7 +23,7 @@ if ($virtual_path === false) {
 if (!is_file($real_path)) {
     http_response_code(404);
     $transaction->finish();
-    die('Queried directory not found');
+    die('Queried file not found');
 }
 
 process_last_modified($real_path);
