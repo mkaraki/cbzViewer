@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/vue';
 import '../style/list.css';
 import PQueue from 'p-queue';
 import lozad from "lozad";
+import {loadQueuedImage, resetThumbnailBatch, unloadQueuedImages} from "@/utils/queued-image-fetch.ts";
 
 defineOptions({
   name: 'List',
@@ -23,48 +24,10 @@ const state = ref(0);
 const queue = new PQueue({ concurrency: 2 });
 let thumbnailBatch = new AbortController();
 
-async function loadQueuedImage(imgElement: HTMLImageElement) {
-  const src = imgElement.dataset.src;
-  if (!src) return;
-
-  // Add the fetch operation to the queue
-  await queue.add(async () => {
-    if (imgElement.classList.contains('loaded')) return; // Skip if already loaded
-    if (!imgElement.isConnected) return;
-
-    try {
-      // The queue ensures only limited number of these fetches are ever running at once
-      const traceData = Sentry.getTraceData();
-      const response = await fetch(src, {
-        signal: thumbnailBatch.signal,
-        headers: {
-          "sentry-trace": traceData['sentry-trace'] ?? '',
-          "baggage": traceData['baggage'] ?? '',
-        }
-      });
-
-      if (!response.ok) {
-        imgElement.src = '/assets/error.jpg';
-        throw new Error('Network response was not ok');
-      }
-
-      // Convert the raw response into a local browser Blob URL
-      const blob = await response.blob();
-      imgElement.src = URL.createObjectURL(blob);
-
-      imgElement.classList.add('loaded');
-    } catch (error) {
-      if (error instanceof DOMException && error.name === 'AbortError') return;
-      imgElement.src = '/assets/error.jpg';
-      console.error("Failed to load thumbnail:", error);
-    }
-  });
-}
-
 async function addQueuedImages() {
   const observer = lozad('.queue-img', {
     load: async (el) => {
-      await loadQueuedImage(el as HTMLImageElement);
+      await loadQueuedImage(el as HTMLImageElement, queue, thumbnailBatch);
     }
   });
 
@@ -95,15 +58,14 @@ const funcOnBeforeMount = () => {
 
 onBeforeMount(funcOnBeforeMount);
 
-function resetThumbnailBatch() {
-  queue.clear();
-  thumbnailBatch.abort();
+const resetThumbnailBatchProcess = () => {
+  resetThumbnailBatch(queue, thumbnailBatch);
   thumbnailBatch = new AbortController();
+  unloadQueuedImages();
 }
 
 watch(() => props.path, () => {
-  resetThumbnailBatch();
-  unloadQueuedImages();
+  resetThumbnailBatchProcess()
   funcOnBeforeMount();
 })
 
@@ -112,19 +74,8 @@ watch(data, async () => {
   await addQueuedImages();
 }, { immediate: true });
 
-function unloadQueuedImages() {
-  document.querySelectorAll('.loaded.queue-img').forEach((e) => {
-    const el = e as HTMLImageElement;
-
-    URL.revokeObjectURL(el.src);
-    el.src = '/assets/loading.jpg';
-    el.classList.remove('loaded');
-  });
-}
-
 const onBeforeUnmountFunction = () => {
-  resetThumbnailBatch();
-  unloadQueuedImages();
+  resetThumbnailBatchProcess()
 }
 
 onBeforeUnmount(onBeforeUnmountFunction);
