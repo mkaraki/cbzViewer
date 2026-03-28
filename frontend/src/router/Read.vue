@@ -66,11 +66,11 @@ function unloadQueuedImages() {
 async function addQueuedImages() {
   if (state.value !== 2) return;
   
-  data.value['pages'].forEach(async (page) => {
-    if (typeof pageSrc.value[page['pageNo']] === "undefined") {
+  data.value['pages'].forEach((page) => {
+    if (pageSrc.value[page['pageNo']] === undefined) {
       pageSrc.value[page['pageNo']] = '/assets/loading.jpg';
     }
-    await loadQueuedImage(page['pageNo'], page['imageFile']);
+    loadQueuedImage(page['pageNo'], page['imageFile']);
   })
 }
 
