@@ -139,7 +139,7 @@ const pageSelect = () => {
   <template v-if="state === 2">
     <header>
       <div>
-        <router-link :to="`list?path=${data['parentDir']}`">Back</router-link>
+        <router-link :to="`list?path=${ encodeURI(data['parentDir']) }`">Back</router-link>
       </div>
       <div>
         {{ data['comicTitle'] }}
@@ -150,7 +150,7 @@ const pageSelect = () => {
         <div v-for="page in data['pages']" :id="page['pageNo']" :key="page['pageNo']" class="page-img-container">
           <img ref="pages" :alt="`Image of page ${page['pageNo']}`"
                :loading="( page['pageNo'] === 1 ? 'eager' : 'lazy' )"
-               :src="`/api/img?path=${ data['path'] }&f=${ page['imageFile'] }`" class="page" />
+               :src="`/api/img?path=${ encodeURI(data['path']) }&f=${ encodeURI(page['imageFile']) }`" class="page" />
         </div>
       </div>
       <a class="prev-controller" href="javascript:void(0)" v-on:click="leftHandler()"></a>
