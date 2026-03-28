@@ -49,23 +49,6 @@ onBeforeMount(() => {
             setPage(1);
           }
 
-          {
-            const headElem = document.getElementsByTagName('head')[0]
-            for (let i = 0; i < data.value['pages'].length; i++) {
-              const page = data.value['pages'][i]
-              const link = document.createElement('link')
-              link.rel = 'preload'
-              link.as = 'image'
-              if (i == 0) {
-                link.fetchPriority = 'high';
-              } else if (i > 4) {
-                link.fetchPriority = 'low';
-              }
-              link.href = `/api/img?path=${encodeURIComponent(data.value['path'])}&f=${encodeURIComponent(page['imageFile'])}`
-              headElem.appendChild(link)
-            }
-          }
-
           console.trace("Changing images to eager: ", pages.value);
           pages.value?.forEach((v: Element) => {
             (v as HTMLImageElement).loading = 'eager';
