@@ -234,16 +234,19 @@ const getPageDecrementAmount = () => {
 
 const chPageDec = () => {
   const page = getPage();
-  if (page <= 1)
+  const decAmount = getPageDecrementAmount();
+  if (page - decAmount < 1)
     return;
-  setPage(page - getPageDecrementAmount());
+  setPage(Math.max(1, page - decAmount));
 }
 
 const chPageInc = () => {
   const page = getPage();
-  if (page >= data.value['pageCnt'])
+  const incAmount = getPageIncrementAmount();
+  const pageCnt = data.value['pageCnt'];
+  if (page >= pageCnt)
     return;
-  setPage(page + getPageIncrementAmount());
+  setPage(Math.min(pageCnt, page + incAmount));
 }
 
 const pageSelect = () => {
