@@ -1,0 +1,178 @@
+<?php
+require_once __DIR__ . '/../internals/_init.php';
+
+use comic_format\CbzFile;
+
+$transaction = init_sentry_tracing('/api/img');
+
+$path = check_path_query();
+
+if (!isset($_GET['f'])) {
+    http_response_code(400);
+    $transaction->finish();
+    die('No required parameter found: f');
+}
+if (!is_string($_GET['f'])) {
+    http_response_code(400);
+    $transaction->finish();
+    die('Parameter f must be a string');
+}
+$f = trim($_GET['f']);
+if (empty($f)) {
+    http_response_code(400);
+    $transaction->finish();
+    die('No required parameter found: f. Empty is not allowed.');
+}
+
+$thumb = isset($_GET['thumb']);
+
+$real_path = get_real_path($path);
+
+if ($real_path === false) {
+    http_response_code(400);
+    $transaction->finish();
+    die('Invalid path');
+}
+
+$virtual_path = get_virtual_path($real_path);
+
+if ($virtual_path === false) {
+    http_response_code(400);
+    $transaction->finish();
+    die('Unable to find relative path');
+}
+
+if (!is_file($real_path)) {
+    http_response_code(404);
+    $transaction->finish();
+    die('Queried directory not found');
+}
+
+process_last_modified($real_path);
+
+$extension = get_extension($real_path);
+$inner_extension = get_extension($f);
+
+$image_content_type = false;
+$image_content = null;
+
+switch ($extension) {
+    case 'cbz': {
+        $cbz = new CbzFile();
+        $res = $cbz->open($real_path);
+        if ($res === false) {
+            http_response_code(500);
+            $transaction->finish();
+            die('Unable to open cbz file');
+        }
+        
+        if (!$cbz->isFile($f)) {
+            http_response_code(404);
+            $transaction->finish();
+            die('Internal file is invalid: not found');
+        }
+
+        $image_content = $cbz->readImage($f);
+        if ($image_content === false) {
+            http_response_code(500);
+            $transaction->finish();
+            die('Internal file is invalid: unable to read');
+        }
+        
+        $image_content_type = get_mime_type_from_extension($inner_extension);
+
+        break;
+    }
+    case "pdf": {
+        if (!IS_PDF_SUPPORTED) {
+            http_response_code(500);
+            $transaction->finish();
+            die("This system isn't support PDF file");
+        }
+        
+        $thumb_query = $thumb ? '&thumb=1' : '';
+        $url_safe_virtual_path = urlencode($virtual_path);
+        $url_safe_f = urlencode($f);
+        
+        $url_param = '?path=' . $url_safe_virtual_path . '&f=' . $url_safe_f . $thumb_query;
+        
+        http_response_code(301);
+        header('Location: ' . PDF_SERVER . 'api/pdf/img' . $url_param);
+        $transaction->finish();
+        exit;
+    }
+    default: {
+        http_response_code(404);
+        $transaction->finish();
+        die('This file is not supported.');
+    }
+}
+
+if (!$thumb && $image_content_type !== false) {
+    header('Content-type: ' . $image_content_type);
+    header('Cache-Control: public, max-age=31536000');
+    print($image_content);
+    $transaction->finish();
+    exit;
+}
+
+$image = imagecreatefromstring($image_content);
+unset($image_content);
+
+if ($image === false) {
+    http_response_code(500);
+    $transaction->finish();
+    die('Unable to read image');
+}
+
+if ($thumb) {
+    $new_size = 160;
+    $new_size_f = 160.0;
+    
+    $orig_width = imagesx($image);
+    $orig_height = imagesy($image);
+
+    $orig_width_f = floatval($orig_width);
+    $orig_height_f = floatval($orig_height);
+    
+    $do_resize = false;
+    
+    $new_width = $new_size;
+    $new_height = $new_size;
+
+    if ($orig_width > $orig_height) {
+        if ($orig_width > $new_size) {
+            $ratio = $new_size_f / $orig_width_f;
+            $new_height = intval($orig_height_f * $ratio);
+            $do_resize = true;
+        }
+    } else {
+        if ($orig_height > $new_size) {
+            $ratio = $new_size_f / $orig_height_f;
+            $new_width = intval($orig_width_f * $ratio);
+            $do_resize = true;
+        }
+    }
+    
+    // ToDo: Check both new_width and new_height are larger than 1.
+    
+    if ($do_resize) {
+        $resized = imagecreatetruecolor($new_width, $new_height);
+        imagecopyresampled($resized, $image, 0, 0, 0, 0, $new_width, $new_height, $orig_width, $orig_height);
+        unset($image);
+        $image = $resized;
+    }
+}
+
+$quality = $thumb ? 20 : 80;
+
+header('Content-type: image/jpeg');
+header('Cache-Control: public, max-age=31536000');
+$res = imagejpeg($image, null, $quality);
+if ($res === false) {
+    http_response_code(500);
+    $transaction->finish();
+    die('Unable to encode image');
+}
+
+$transaction->finish();

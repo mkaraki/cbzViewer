@@ -1,3 +1,11 @@
+FROM composer AS require-server
+
+WORKDIR /app
+
+COPY composer.json composer.lock /app/
+
+RUN composer install --ignore-platform-reqs
+
 FROM oven/bun:latest AS frontend
 
 WORKDIR /app
@@ -14,33 +22,30 @@ RUN --mount=type=secret,id=SENTRY_ORG,env=SENTRY_ORG \
     --mount=type=secret,id=SENTRY_URL,env=SENTRY_URL \
     bun run build
 
-FROM rust:1-trixie AS build
+FROM dunglas/frankenphp:php8.5
 
-WORKDIR /app
+RUN install-php-extensions \
+	excimer \
+	gd \
+	zip \
+	opcache \
+    apcu
 
-# Cache dependency compilation by building a stub first.
-COPY Cargo.toml Cargo.lock /app/
-RUN mkdir src && echo 'fn main() {}' > src/main.rs && \
-    cargo build --release && \
-    rm -rf src target/release/cbzViewer target/release/deps/cbzViewer*
+COPY --from=require-server /app/vendor /app/public/vendor
+COPY --from=frontend /app/dist /app/public
+COPY Caddyfile /etc/frankenphp/Caddyfile
 
-COPY src /app/src
-RUN cargo build --release
+ARG USER=appuser
+RUN \
+	useradd ${USER}; \
+	setcap -r /usr/local/bin/frankenphp; \
+	chown -R ${USER}:${USER} /config/caddy /data/caddy
+USER ${USER}
 
-FROM debian:trixie-slim
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    liblzma5 \
-    libssl3t64 \
-    ca-certificates \
-	&& rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-COPY config.docker.json /app/config.json
-COPY --from=build /app/target/release/cbzViewer /app/
-COPY --from=frontend /app/dist /app/dist
+COPY config.docker.json /app/public/config.json
+COPY *.php /app/public/
+COPY api /app/public/api
+COPY internals /app/public/internals
 
 VOLUME /books
 EXPOSE 8080
-
-ENTRYPOINT ["/app/cbzViewer"]
