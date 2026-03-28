@@ -6,7 +6,13 @@
 :8080 {
 	root public/
 	encode zstd br gzip
-	
+    
+    handle /internals/* {
+    	respond "Not Found" 404
+    }
+    handle /vendor/* {
+    	respond "Not Found" 404
+    }
 	handle {
         php_server {
             try_files {path} /index.php
@@ -21,9 +27,4 @@
         	try_files {path}.php
         }
     }
-    
-    @private_php path /internals/*
-    respond @private_php "Not Found" 404
-    @private_composer path /vendor/*
-    respond @private_composer "Not Found" 404
 }
