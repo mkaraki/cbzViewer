@@ -3,7 +3,6 @@ import {nextTick, onBeforeMount, onBeforeUnmount, onMounted, type Ref, ref, useT
 import '../style/read.css';
 import * as Sentry from "@sentry/vue";
 import PQueue from 'p-queue';
-import lozad from "lozad";
 import {loadQueuedImage, resetThumbnailBatch, unloadQueuedImages} from "@/utils/queued-image-fetch.ts";
 
 const data: Ref<any> = ref([]);

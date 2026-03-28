@@ -1,6 +1,4 @@
-import lozad from "lozad";
 import * as Sentry from "@sentry/vue";
-import {nextTick, onBeforeMount, watch} from "vue";
 import type PQueue from "p-queue";
 
 async function loadQueuedImage(imgElement: HTMLImageElement, queue: PQueue, thumbnailBatch: AbortController) {
