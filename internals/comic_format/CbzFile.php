@@ -19,7 +19,7 @@ class CbzFile implements ComicFormat
     }
     
     public function open(string $filePath): bool {
-        $res = $this->zip_archive->open($filePath, ZipArchive::CREATE);
+        $res = $this->zip_archive->open($filePath, ZipArchive::RDONLY);
         return $res === true;
     }
 
