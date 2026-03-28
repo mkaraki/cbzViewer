@@ -38,8 +38,11 @@ function get_mime_type_from_extension(string $extension): string|false {
     }
 }
 
-function canonicalize_cbz_dir(): string {
+function canonicalize_cbz_dir(): string|false {
     $cbz_dir = realpath(CBZ_DIR);
+    if ($cbz_dir === false) {
+        return false;
+    }
 
     if (!str_ends_with($cbz_dir, '/') && !str_ends_with($cbz_dir, '\\')) {
         $cbz_dir .= DIRECTORY_SEPARATOR;
@@ -50,6 +53,10 @@ function canonicalize_cbz_dir(): string {
 
 function get_virtual_path(string $real_path): string|false {
     $cbz_dir = canonicalize_cbz_dir();
+    if ($cbz_dir === false) {
+        return false;
+    }
+    
     if (!is_safe_path($real_path)) {
         return false;
     }
@@ -68,6 +75,10 @@ function get_virtual_path(string $real_path): string|false {
 
 function get_real_path(string $virtual_path): string|false {
     $cbz_dir = canonicalize_cbz_dir();
+    if ($cbz_dir === false) {
+        return false;
+    }
+    
     if (str_starts_with($virtual_path, '/')) {
         $virtual_path = substr($virtual_path, 1);
     }
@@ -88,7 +99,13 @@ function get_real_path(string $virtual_path): string|false {
 
 function is_safe_path(string $real_path): bool {
     $real_path = realpath($real_path);
+    if ($real_path === false) {
+        return false;
+    }
     $cbz_dir = canonicalize_cbz_dir();
+    if ($cbz_dir === false) {
+        return false;
+    }
     
     // This is for in case of
     // CBZ_DIR = /path/to/cbz/dir/
