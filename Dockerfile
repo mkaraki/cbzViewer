@@ -22,7 +22,7 @@ RUN --mount=type=secret,id=SENTRY_ORG,env=SENTRY_ORG \
     --mount=type=secret,id=SENTRY_URL,env=SENTRY_URL \
     bun run build
 
-FROM dunglas/frankenphp
+FROM dunglas/frankenphp:php8.5
 
 RUN install-php-extensions \
 	excimer \
