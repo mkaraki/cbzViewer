@@ -63,7 +63,7 @@ describe('List view check', () => {
 
     it('check Testing Introduction 01.cbz thumbnail works', () => {
         cy.visit('/list?path=tests')
-        cy.get('img[alt="Thumbnail of Testing Introduction 01.cbz"]')
+        cy.get('img.loaded[alt="Thumbnail of Testing Introduction 01.cbz"]')
             .should('be.visible')
             .and(($img) => {
                 // Thumbnail's width should 106px. see: img.php
