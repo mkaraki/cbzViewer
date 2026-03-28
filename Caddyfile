@@ -13,6 +13,9 @@
     handle /vendor/* {
     	respond "Not Found" 404
     }
+    handle /_config.php {
+        respond "Not Found" 404
+    }
 	handle {
         php_server {
             try_files {path} /index.php
