@@ -96,6 +96,12 @@ if (!$thumb && $image_content_type !== false) {
 $image = imagecreatefromstring($image_content);
 unset($image_content);
 
+if ($image === false) {
+    http_response_code(500);
+    $transaction->finish();
+    die('Unable to read image');
+}
+
 if ($thumb) {
     $new_size = 160;
     $new_size_f = 160.0;
