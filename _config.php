@@ -9,8 +9,12 @@ if ($config === null) {
     http_response_code(500);
     die("Configuration error: invalid config file");
 }
-if (!isset($config['cbzDir'])) {
+if (empty($config['cbzDir'])) {
     http_response_code(500);
     die("Configuration error: missing config");
+}
+if (!is_dir($config['cbzDir'])) {
+    http_response_code(500);
+    die("Configuration error: cbzDir not found");
 }
 define("CBZ_DIR", $config['cbzDir']);
