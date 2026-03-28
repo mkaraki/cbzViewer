@@ -118,6 +118,7 @@ watch(data, async () => {
 
 const onBeforeUnmountFunction = () => {
   resetThumbnailBatchProcess();
+  document.onkeydown = null;
 }
 
 onBeforeUnmount(onBeforeUnmountFunction);
