@@ -32,6 +32,10 @@ if (!str_ends_with($real_path, '/') && !str_ends_with($real_path, '\\')) {
 
 process_last_modified($real_path);
 
+$ret = [
+    'currentDir' => $virtual_path,
+];
+
 $items = scandir($real_path, SCANDIR_SORT_NONE);
 if ($items === false) {
     http_response_code(500);
