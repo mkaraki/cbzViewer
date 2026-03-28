@@ -44,7 +44,8 @@ USER ${USER}
 
 COPY config.docker.json /app/public/config.json
 COPY *.php /app/public/
-COPY api internals /app/public/
+COPY api /app/public/api
+COPY internals /app/public/internals
 
 VOLUME /books
 EXPOSE 8080
