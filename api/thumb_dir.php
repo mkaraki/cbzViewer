@@ -22,6 +22,11 @@ if ($get_first_child_item === false) {
 }
 
 $virtual_item_path = get_virtual_path($get_first_child_item);
+if ($virtual_item_path === false) {
+    http_response_code(500);
+    $transaction->finish();
+    die('Unable to retrieve virtual path from first item');
+}
 $url_virtual_item = urlencode($virtual_item_path);
 
 http_response_code(302);
