@@ -4,21 +4,7 @@ require_once __DIR__ . '/../internals/_init.php';
 $transaction = init_sentry_tracing('/api/thumb_dir');
 
 $path = check_path_query();
-$real_path = get_real_path($path);
-
-if ($real_path === false) {
-    http_response_code(400);
-    $transaction->finish();
-    die('Invalid path');
-}
-
-$virtual_path = get_virtual_path($real_path);
-
-if ($virtual_path === false) {
-    http_response_code(400);
-    $transaction->finish();
-    die('Unable to find relative path');
-}
+[$real_path, $virtual_path] = get_real_and_virtual_path_from_path($path, $transaction);
 
 if (!is_dir($real_path)) {
     http_response_code(404);

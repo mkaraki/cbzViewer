@@ -273,3 +273,21 @@ function process_last_modified(string $real_path) {
         }
     }
 }
+
+function get_real_and_virtual_path_from_path(string $path, \Sentry\Tracing\Transaction $transaction): array {
+    $real_path = get_real_path($path);
+    if ($real_path === false) {
+        http_response_code(400);
+        $transaction->finish();
+        die('Invalid path');
+    }
+
+    $virtual_path = get_virtual_path($real_path);
+    if ($virtual_path === false) {
+        http_response_code(400);
+        $transaction->finish();
+        die('Unable to find relative path');
+    }
+    
+    return [$real_path, $virtual_path];
+}
