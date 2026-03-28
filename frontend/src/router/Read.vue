@@ -160,8 +160,6 @@ onMounted(() => {
 
 const isRtL = ref(false);
 
-const pages = useTemplateRef('pages')
-
 const pageNumber = ref(1);
 
 const showingPageIds = ref([-1]);
