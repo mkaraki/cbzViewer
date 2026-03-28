@@ -1,7 +1,14 @@
 <script lang="ts" setup>
-import {onBeforeMount, type Ref, ref, watch} from "vue";
+import {nextTick, onBeforeMount, onBeforeUnmount, type Ref, ref, watch} from "vue";
 import * as Sentry from '@sentry/vue';
 import '../style/list.css';
+import PQueue from 'p-queue';
+import lozad from "lozad";
+import {loadQueuedImage, resetThumbnailBatch, unloadQueuedImages} from "@/utils/queued-image-fetch.ts";
+
+defineOptions({
+  name: 'List',
+});
 
 const data: Ref<any> = ref([]);
 
@@ -14,10 +21,24 @@ const props = defineProps({
 // 2: success
 const state = ref(0);
 
-const funcOnBeforeMount = () => {
-  const traceData = Sentry.getTraceData();
+const queue = new PQueue({ concurrency: 2 });
+let thumbnailBatch = new AbortController();
 
-  state.value = 0;
+async function addQueuedImages() {
+  const observer = lozad('.queue-img', {
+    load: async (el) => {
+      await loadQueuedImage(el as HTMLImageElement, queue, thumbnailBatch);
+    }
+  });
+
+  observer.observe();
+}
+
+const funcOnBeforeMount = () => {
+  if (state.value !== 2)
+    state.value = 0;
+  
+  const traceData = Sentry.getTraceData();
   fetch(`/api/list?path=${encodeURIComponent(props.path ?? '')}`, {
     headers: {
       "sentry-trace": traceData['sentry-trace'] ?? '',
@@ -37,9 +58,27 @@ const funcOnBeforeMount = () => {
 
 onBeforeMount(funcOnBeforeMount);
 
+const resetThumbnailBatchProcess = () => {
+  resetThumbnailBatch(queue, thumbnailBatch);
+  thumbnailBatch = new AbortController();
+  unloadQueuedImages();
+}
+
 watch(() => props.path, () => {
+  resetThumbnailBatchProcess()
   funcOnBeforeMount();
 })
+
+watch(data, async () => {
+  await nextTick();
+  await addQueuedImages();
+}, { immediate: true });
+
+const onBeforeUnmountFunction = () => {
+  resetThumbnailBatchProcess()
+}
+
+onBeforeUnmount(onBeforeUnmountFunction);
 </script>
 
 <template>
@@ -60,18 +99,18 @@ watch(() => props.path, () => {
           <div v-for="item in data['items']" :key="item.path" class="item">
             <template v-if="item['isDir']">
               <router-link :to="`/list?path=${ encodeURIComponent(item['path']) }`">
-                <img :alt="`Thumbnail of ${ item['name'] }`" :src="`/api/thumb_dir?path=${ encodeURIComponent(item['path'])}`" class="thumb" loading="lazy">
+                <img :alt="`Thumbnail of ${ item['name'] }`" src="/assets/loading.jpg" :data-src="`/api/thumb_dir?path=${ encodeURIComponent(item['path'])}`" class="thumb queue-img" loading="lazy">
               </router-link>
             </template>
             <template v-else>
               <router-link :to="`/read?path=${ encodeURIComponent(item['path']) }`">
-                <img :alt="`Thumbnail of ${ item['name'] }`" :src="`/api/thumb?path=${ encodeURIComponent(item['path'])}`" class="thumb" loading="lazy">
+                <img :alt="`Thumbnail of ${ item['name'] }`" src="/assets/loading.jpg" :data-src="`/api/thumb?path=${ encodeURIComponent(item['path'])}`" class="thumb queue-img" loading="lazy">
               </router-link>
             </template>
             <div class="card-body">
               <template v-if="item['isDir']">
                 <h5 class="card-title">
-                  <router-link :to="`/list?path=${ encodeURIComponent(item['path']) }`">{{ item['name'] }}</router-link>
+                  <router-link :to="`/list?path=${ encodeURIComponent(item['path']) }`">{{ item['name'] }}/</router-link>
                 </h5>
               </template>
               <template v-else>
@@ -122,6 +161,6 @@ watch(() => props.path, () => {
   </template>
   <footer>
     <hr />
-    <a href="/legal" rel="noopener noreferrer" target="_blank">Legal</a>
+    <a href="/assets/legal.txt" rel="noopener noreferrer" target="_blank">Legal</a>
   </footer>
 </template>

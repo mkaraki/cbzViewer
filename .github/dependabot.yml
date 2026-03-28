@@ -4,13 +4,24 @@
 # https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
 
 version: 2
+registries:
+  dhi:
+    type: docker-registry
+    url: https://dhi.io
+    username: ${{secrets.DOCKER_USER}}
+    password: ${{secrets.DOCKER_PAT}}
+    replaces-base: true
 updates:
-  - package-ecosystem: "gomod" # See documentation for possible values
+  - package-ecosystem: "cargo" # See documentation for possible values
     directory: "/" # Location of package manifests
     assignees:
       - mkaraki
     schedule:
       interval: "monthly"
+    groups:
+      cargo-all:
+        patterns:
+          - "*"
 
   - package-ecosystem: "npm" # See documentation for possible values
     directory: "/frontend" # Location of package manifests
@@ -18,6 +29,10 @@ updates:
       - mkaraki
     schedule:
       interval: "monthly"
+    groups:
+      npm-all:
+        patterns:
+          - "*"
 
   - package-ecosystem: "docker" # See documentation for possible values
     directory: "/" # Location of package manifests
@@ -25,6 +40,11 @@ updates:
       - mkaraki
     schedule:
       interval: "monthly"
+    registries: "*"
+    groups:
+      docker-all:
+        patterns:
+          - "*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -32,4 +52,8 @@ updates:
       interval: "monthly"
     assignees:
       - mkaraki
+    groups:
+      actions-all:
+        patterns:
+          - "*"
 

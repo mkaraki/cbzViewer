@@ -1,7 +1,9 @@
 <script lang="ts" setup>
-import {onBeforeMount, onMounted, type Ref, ref, useTemplateRef} from "vue";
+import {nextTick, onBeforeMount, onBeforeUnmount, onMounted, type Ref, ref, useTemplateRef, watch} from "vue";
 import '../style/read.css';
 import * as Sentry from "@sentry/vue";
+import PQueue from 'p-queue';
+import {loadQueuedImage, resetThumbnailBatch, unloadQueuedImages} from "@/utils/queued-image-fetch.ts";
 
 const data: Ref<any> = ref([]);
 
@@ -13,6 +15,15 @@ const props = defineProps({
 // 1: failed/Not found
 // 2: success
 const state = ref(0);
+
+const queue = new PQueue({ concurrency: 2 });
+let thumbnailBatch = new AbortController();
+
+async function addQueuedImages() {
+  Array.from(document.getElementsByClassName("queue-img") as HTMLCollectionOf<HTMLImageElement>).forEach(img => {
+    loadQueuedImage(img, queue, thumbnailBatch);
+  });
+}
 
 onBeforeMount(() => {
   const traceData = Sentry.getTraceData();
@@ -66,6 +77,23 @@ onBeforeMount(() => {
         state.value = 1;
       });
 })
+
+const resetThumbnailBatchProcess = () => {
+  resetThumbnailBatch(queue, thumbnailBatch);
+  thumbnailBatch = new AbortController();
+  unloadQueuedImages();
+}
+
+watch(data, async () => {
+  await nextTick();
+  await addQueuedImages();
+}, { immediate: true });
+
+const onBeforeUnmountFunction = () => {
+  resetThumbnailBatchProcess();
+}
+
+onBeforeUnmount(onBeforeUnmountFunction);
 
 onMounted(() => {
   document.onkeydown = (e) => {
@@ -267,7 +295,7 @@ const getToShowImageRealNo = (currentPage: number): Array<number> => {
   <template v-if="state === 2">
     <header>
       <div>
-        <router-link :to="`list?path=${data['parentDir']}`">Back</router-link>
+        <router-link :to="`list?path=${ encodeURI(data['parentDir']) }`">Back</router-link>
       </div>
       <div>
         {{ data['comicTitle'] }}
@@ -277,16 +305,17 @@ const getToShowImageRealNo = (currentPage: number): Array<number> => {
       <div class="page-img-list-container">
         <div class="page-img-container">
           <img v-if="getPageAmount() === 1" class="single-page"
-            :src="`/api/img?path=${ data['path'] }&f=${ showingPages?.[0]?.['imageFile'] }`"
+               src="/assets/loading.jpg"
+              :data-src="`/api/img?path=${ encodeURI(data['path']) }&f=${ encodeURI(showingPages?.[0]?.['imageFile'] ?? '') }`"
           />
           <template v-else-if="getPageAmount() === 2">
             <template v-if="!isRtL">
-              <img class="double-page" :src="`/api/img?path=${ data['path'] }&f=${ showingPages?.[0]?.['imageFile'] }`" />
-              <img class="double-page" :src="`/api/img?path=${ data['path'] }&f=${ showingPages?.[1]?.['imageFile'] }`" />
+              <img class="double-page" src="/assets/loading.jpg" :data-src="`/api/img?path=${ encodeURI(data['path']) }&f=${ encodeURI(showingPages?.[0]?.['imageFile'] ?? '') }`" />
+              <img class="double-page" src="/assets/loading.jpg" :data-src="`/api/img?path=${ encodeURI(data['path']) }&f=${ encodeURI(showingPages?.[1]?.['imageFile'] ?? '') }`" />
             </template>
             <template v-else-if="isRtL">
-              <img class="double-page" :src="`/api/img?path=${ data['path'] }&f=${ showingPages?.[1]?.['imageFile'] }`" />
-              <img class="double-page" :src="`/api/img?path=${ data['path'] }&f=${ showingPages?.[0]?.['imageFile'] }`" />
+              <img class="double-page" src="/assets/loading.jpg" :data-src="`/api/img?path=${ encodeURI(data['path']) }&f=${ encodeURI(showingPages?.[1]?.['imageFile'] ?? '') }`" />
+              <img class="double-page" src="/assets/loading.jpg" :data-src="`/api/img?path=${ encodeURI(data['path']) }&f=${ encodeURI(showingPages?.[0]?.['imageFile'] ?? '') }`" />
             </template>
           </template>
         </div>
@@ -299,7 +328,7 @@ const getToShowImageRealNo = (currentPage: number): Array<number> => {
         <a href="javascript:void(0)" v-on:click="leftHandler()">{{ isRtL ? 'Next' : 'Prev' }}</a>
       </div>
       <div>
-        <a id="pgNum" href="javascript:void(0)" v-on:click="pageSelect()">{{ pageNumber }}</a> / {{ data['pageCnt'] }}
+        <a id="pgNum" ref="pgNum" href="javascript:void(0)" v-on:click="pageSelect()">{{ pageNumber }}</a> / {{ data['pageCnt'] }}
         <a href="javascript:void(0)" v-on:click="rtlSwitch()">{{ ( isRtL ? 'RtL' : 'LtR' ) }}</a> |
         <a href="javascript:void(0)" v-on:click="pageModeSwitch()">{{ pageMode }}</a>
       </div>
