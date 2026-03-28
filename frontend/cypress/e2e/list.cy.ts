@@ -29,20 +29,20 @@ describe('List view check', () => {
         cy.visit('/list?path=')
         cy.contains('tests').should('exist');
         cy.contains('tests').click();
-        cy.url().should('include', '/list?path=%2Ftests')
+        cy.url().should('include', '/list?path=tests%2F')
     })
 
     it('check tests dir exists with non standard link', () => {
         cy.visit('/list')
         cy.contains('tests').should('exist');
         cy.contains('tests').click();
-        cy.url().should('include', '/list?path=%2Ftests')
+        cy.url().should('include', '/list?path=tests%2F')
 
         cy.visit('/list?path=%2F')
         cy.contains('tests').should('exist');
         cy.contains('tests').click();
         // ToDo: Should normalize
-        cy.url().should('include', '/list?path=%2Ftests')
+        cy.url().should('include', '/list?path=tests%2F')
     })
 
     it('check parent dir button works', () => {
@@ -77,7 +77,7 @@ describe('List view check', () => {
         cy.visit('/list?path=tests')
         cy.contains('Testing Introduction 01.cbz').click();
 
-        cy.url().should('include', '/read?path=%2Ftests%2FTesting%20Introduction%2001.cbz');
+        cy.url().should('include', '/read?path=tests%2FTesting%20Introduction%2001.cbz');
     });
 });
 
