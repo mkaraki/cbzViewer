@@ -3,7 +3,7 @@ describe('Read view check', () => {
         cy.visit('/read?path=tests%2FTesting%20Introduction%2001.cbz')
         cy.contains('Back').click();
         // ToDo: Normalize URL
-        cy.url().should('include', '/list?path=/tests')
+        cy.url().should('include', '/list?path=tests')
     })
 
     it('Check page 1 is visible', () => {
