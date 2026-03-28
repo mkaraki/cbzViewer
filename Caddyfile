@@ -17,7 +17,7 @@
         respond "Not Found" 404
     }
     handle /robots.txt {
-        respond "User-agent: *\nDisallow: /" 200
+        respond "Not Found" 404
     }
     handle /favicon.ico {
         respond "Not Found" 404
