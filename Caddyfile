@@ -16,6 +16,12 @@
     handle /_config.php {
         respond "Not Found" 404
     }
+    handle /robots.txt {
+        respond "User-agent: *\nDisallow: /" 200
+    }
+    handle /favicon.ico {
+        respond "Not Found" 404
+    }
 	handle {
         php_server {
             try_files {path} /index.php
