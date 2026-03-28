@@ -128,6 +128,10 @@ function check_path_query(): string {
         http_response_code(400);
         die("`path` parameter is missing");
     }
+    if (!is_string($_GET['path'])) {
+        http_response_code(400);
+        die("`path` parameter must be a string");
+    }
     
     $path = trim($_GET['path']);
     
