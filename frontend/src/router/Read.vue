@@ -91,7 +91,7 @@ onBeforeMount(() => {
         setTimeout(() => {
           let pageStr: RegExpMatchArray|null = location.hash.match(/^#(\d+)$/);
           if (pageStr !== null && typeof pageStr[1] === 'string') {
-            console.trace('Trying to set page:', pageStr[1]);
+            console.debug('Trying to set page:', pageStr[1]);
             const page = parseInt(pageStr[1]);
             setPage(page);
           } else {
