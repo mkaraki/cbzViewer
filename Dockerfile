@@ -34,6 +34,14 @@ RUN install-php-extensions \
 COPY --from=require-server /app/vendor /app/public/vendor
 COPY --from=frontend /app/dist /app/public
 COPY Caddyfile /etc/frankenphp/Caddyfile
+
+ARG USER=appuser
+RUN \
+	useradd ${USER}; \
+	setcap -r /usr/local/bin/frankenphp; \
+	chown -R ${USER}:${USER} /config/caddy /data/caddy
+USER ${USER}
+
 COPY config.docker.json /app/public/config.json
 COPY *.php /app/public/
 COPY api internals /app/public/
