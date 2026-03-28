@@ -23,7 +23,7 @@ if ($virtual_path === false) {
 if (!is_file($real_path)) {
     http_response_code(404);
     $transaction->finish();
-    die('Queried directory not found');
+    die('Queried file not found');
 }
 
 process_last_modified($real_path);
@@ -33,7 +33,7 @@ $parent_dir = get_parent_if_exists($virtual_path);
 if ($parent_dir === false) {
     http_response_code(500);
     $transaction->finish();
-    die('Unexpected error: All files must belongs to a directory');
+    die('Unexpected error: All files must belong to a directory');
 }
 
 $ret = [
