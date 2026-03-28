@@ -136,6 +136,8 @@ if ($thumb) {
         }
     }
     
+    // ToDo: Check both new_width and new_height are larger than 1.
+    
     if ($do_resize) {
         $resized = imagecreatetruecolor($new_width, $new_height);
         imagecopyresampled($resized, $image, 0, 0, 0, 0, $new_width, $new_height, $orig_width, $orig_height);
