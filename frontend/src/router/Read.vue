@@ -249,6 +249,8 @@ const chPageInc = () => {
 const pageSelect = () => {
   const pageStr = getPage().toString();
   const page = parseInt(prompt("Page?", pageStr) ?? pageStr);
+  if (Number.isNaN(page) || page < 1 || page > data.value['pageCnt'])
+    return;
   setPage(page);
 }
 
