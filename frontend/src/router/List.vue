@@ -3,6 +3,7 @@ import {nextTick, onBeforeMount, onBeforeUnmount, type Ref, ref, watch} from "vu
 import * as Sentry from '@sentry/vue';
 import '../style/list.css';
 import PQueue from 'p-queue';
+import lozad from "lozad";
 
 defineOptions({
   name: 'List',
@@ -61,9 +62,13 @@ async function loadQueuedImage(imgElement: HTMLImageElement) {
 }
 
 async function addQueuedImages() {
-  Array.from(document.getElementsByClassName("queue-img") as HTMLCollectionOf<HTMLImageElement>).forEach(img => {
-    loadQueuedImage(img);
+  const observer = lozad('.queue-img', {
+    load: async (el) => {
+      await loadQueuedImage(el as HTMLImageElement);
+    }
   });
+
+  observer.observe();
 }
 
 const funcOnBeforeMount = () => {

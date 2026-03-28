@@ -14,6 +14,7 @@
   "dependencies": {
     "@sentry/vue": "^10.45.0",
     "bootstrap": "5.3.8",
+    "lozad": "^1.16.0",
     "p-queue": "^9.1.0",
     "vue": "^3.5.30",
     "vue-router": "^4.6.4"
@@ -22,6 +23,7 @@
     "@sentry/vite-plugin": "^4.9.1",
     "@tsconfig/node22": "^22.0.5",
     "@types/bootstrap": "^5.2.10",
+    "@types/lozad": "^1.16.4",
     "@types/node": "^25.5.0",
     "@vitejs/plugin-vue": "^6.0.5",
     "@vue/tsconfig": "^0.8.1",
