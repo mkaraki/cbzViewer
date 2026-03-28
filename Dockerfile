@@ -46,4 +46,5 @@ COPY config.docker.json /app/public/config.json
 COPY *.php /app/public/
 COPY api internals /app/public/
 
+VOLUME /books
 EXPOSE 8080
