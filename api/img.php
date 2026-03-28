@@ -83,6 +83,24 @@ switch ($extension) {
 
         break;
     }
+    case "pdf": {
+        if (!IS_PDF_SUPPORTED) {
+            http_response_code(500);
+            $transaction->finish();
+            die("This system isn't support PDF file");
+        }
+        
+        $thumb_query = $thumb ? '&thumb=1' : '';
+        $url_safe_virtual_path = urlencode($virtual_path);
+        $url_safe_f = urlencode($f);
+        
+        $url_param = '?path=' . $url_safe_virtual_path . '&f=' . $url_safe_f . $thumb_query;
+        
+        http_response_code(301);
+        header('Location: ' . PDF_SERVER . 'api/pdf/img' . $url_param);
+        $transaction->finish();
+        exit;
+    }
     default: {
         http_response_code(404);
         $transaction->finish();

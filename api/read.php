@@ -43,6 +43,19 @@ $ret = [
     'parentDir' => $parent_dir,
 ];
 
+$extension = get_extension($virtual_path);
+
+if ($extension === 'pdf' && IS_PDF_SUPPORTED) {
+    $virtual_path = get_virtual_path($real_path);
+    if ($virtual_path === false) {
+        return false;
+    }
+
+    http_response_code(301);
+    header("Location: " . PDF_SERVER . "api/pdf/read?path=" . urlencode($virtual_path));
+    exit;
+}
+
 $comic_data = get_comic_data($real_path);
 if ($comic_data === false) {
     http_response_code(500);

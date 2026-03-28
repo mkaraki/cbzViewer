@@ -20,7 +20,14 @@ use comic_format\CbzFile;
 ]);
 
 const SUPPORTED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'gif', 'png', 'webp'];
-const SUPPORTED_ITEM_EXTENSIONS = ['cbz'];
+
+if (defined("PDF_SERVER")) {
+    define("SUPPORTED_ITEM_EXTENSIONS", ['cbz', 'pdf']);
+    define("IS_PDF_SUPPORTED", true);
+} else {
+    define("SUPPORTED_ITEM_EXTENSIONS", ['cbz']);
+    define("IS_PDF_SUPPORTED", false);
+}
 
 function get_mime_type_from_extension(string $extension): string|false {
     switch ($extension) {

@@ -1,0 +1,17 @@
+{
+  "name": "pdf-server",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@sentry/bun": "^10.46.0",
+    "canvas": "^3.2.2",
+    "pdfjs-dist": "^5.5.207"
+  }
+}

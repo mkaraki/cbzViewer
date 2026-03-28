@@ -1,3 +1,4 @@
 {
-  "cbzDir": "/books"
+  "cbzDir": "/books",
+  "pdfServer": "http://localhost:8081"
 }

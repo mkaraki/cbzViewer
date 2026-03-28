@@ -11,3 +11,16 @@ services:
       - SENTRY_DSN=${SENTRY_DSN}
       - SENTRY_ENVIRONMENT=dev
       - RUST_LOG=${RUST_LOG:-debug}
+  
+  pdf-server:
+    build:
+      context: pdf-server
+      dockerfile: Dockerfile
+    volumes:
+      - ./books:/books:ro
+    ports:
+      - 8081:8081
+    environment:
+      - CBZ_DIR=/books
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_ENVIRONMENT=dev

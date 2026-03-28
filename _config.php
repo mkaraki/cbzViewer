@@ -18,3 +18,11 @@ if (!is_dir($config['cbzDir'])) {
     die("Configuration error: cbzDir not found");
 }
 define("CBZ_DIR", $config['cbzDir']);
+
+if (!empty($config['pdfServer'])) {
+    $pdf_server = $config['pdfServer'];
+    if (!str_ends_with($pdf_server, '/')) {
+        $pdf_server .= '/';
+    }
+    define("PDF_SERVER", $pdf_server);
+}
