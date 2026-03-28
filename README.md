@@ -6,18 +6,11 @@ Online CBZ and PDF file viewer.
 
 ### Generate CREDITS and legal.html
 
-Install [`cargo-about`](https://github.com/EmbarkStudios/cargo-about) and run:
-
-```bash
-cargo about generate CREDITS.hbs -o CREDITS
-```
-
-> [!NOTE]
-> Write all frontend project's dependency to `CREDITS.3`
+Write all frontend project's dependency to `CREDITS.3` and Write all backend project's dependency to `CREDITS.1`
 
 And then copy that info to `legal.txt`.
 
 ```bash
-cat CREDITS > frontend/public/legal.txt
-cat CREDITS.3 >> frontend/public/legal.txt
+cat CREDITS.1 > frontend/public/assets/legal.txt
+cat CREDITS.3 >> frontend/public/assets/legal.txt
 ```

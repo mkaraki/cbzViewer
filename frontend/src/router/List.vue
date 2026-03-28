@@ -210,6 +210,6 @@ onBeforeUnmount(onBeforeUnmountFunction);
   </template>
   <footer>
     <hr />
-    <a href="/legal" rel="noopener noreferrer" target="_blank">Legal</a>
+    <a href="/assets/legal.txt" rel="noopener noreferrer" target="_blank">Legal</a>
   </footer>
 </template>
