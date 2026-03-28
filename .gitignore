@@ -1,5 +1,5 @@
 /config.json
-/target/
+/vendor/
 /books/*
 !/books/tests
 /books/tests/**/*.png
