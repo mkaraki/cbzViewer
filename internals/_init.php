@@ -34,7 +34,7 @@ function get_mime_type_from_extension(string $extension): string|false {
         case 'webp':
             return 'image/webp';
         default:
-            return 'false';
+            return false;
     }
 }
 
