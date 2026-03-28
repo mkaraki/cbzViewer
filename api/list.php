@@ -38,11 +38,7 @@ if ($items === false) {
     $transaction->finish();
     die('Unable to retrieve directory items');
 }
-$natsort_res = natsort($items);
-
-$ret = [
-    'currentDir' => $virtual_path,
-];
+natsort($items);
 
 $ret_items = [];
 
