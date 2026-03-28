@@ -141,7 +141,7 @@ if ($thumb) {
 
 $quality = $thumb ? 20 : 80;
 
-header('Content-type: ' . $image_content_type);
+header('Content-type: image/jpeg');
 header('Cache-Control: public, max-age=31536000');
 $res = imagejpeg($image, null, $quality);
 if ($res === false) {
