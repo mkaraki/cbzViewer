@@ -29,20 +29,20 @@ describe('List view check', () => {
         cy.visit('/list?path=')
         cy.contains('tests').should('exist');
         cy.contains('tests').click();
-        cy.url().should('include', '/list?path=%2Ftests')
+        cy.url().should('include', '/list?path=tests%2F')
     })
 
     it('check tests dir exists with non standard link', () => {
         cy.visit('/list')
         cy.contains('tests').should('exist');
         cy.contains('tests').click();
-        cy.url().should('include', '/list?path=%2Ftests')
+        cy.url().should('include', '/list?path=tests%2F')
 
         cy.visit('/list?path=%2F')
         cy.contains('tests').should('exist');
         cy.contains('tests').click();
         // ToDo: Should normalize
-        cy.url().should('include', '/list?path=%2Ftests')
+        cy.url().should('include', '/list?path=tests%2F')
     })
 
     it('check parent dir button works', () => {
@@ -63,13 +63,13 @@ describe('List view check', () => {
 
     it('check Testing Introduction 01.cbz thumbnail works', () => {
         cy.visit('/list?path=tests')
-        cy.get('img[alt="Thumbnail of Testing Introduction 01.cbz"]')
+        cy.get('img.loaded[alt="Thumbnail of Testing Introduction 01.cbz"]')
             .should('be.visible')
             .and(($img) => {
-                // Thumbnail's width should 100px. see: img.go
-                expect($img[0].naturalWidth).to.be.equal(100);
+                // Thumbnail's width should 106px. see: img.php
+                expect($img[0].naturalWidth).to.be.equal(106);
                 // Check aspect ratio is preserved
-                expect($img[0].naturalHeight).to.be.equal(150);
+                expect($img[0].naturalHeight).to.be.equal(160);
             })
     })
 
@@ -77,7 +77,7 @@ describe('List view check', () => {
         cy.visit('/list?path=tests')
         cy.contains('Testing Introduction 01.cbz').click();
 
-        cy.url().should('include', '/read?path=%2Ftests%2FTesting%20Introduction%2001.cbz');
+        cy.url().should('include', '/read?path=tests%2FTesting%20Introduction%2001.cbz');
     });
 });
 
