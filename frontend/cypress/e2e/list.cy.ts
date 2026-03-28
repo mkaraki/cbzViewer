@@ -66,10 +66,10 @@ describe('List view check', () => {
         cy.get('img[alt="Thumbnail of Testing Introduction 01.cbz"]')
             .should('be.visible')
             .and(($img) => {
-                // Thumbnail's width should 100px. see: img.go
-                expect($img[0].naturalWidth).to.be.equal(100);
+                // Thumbnail's width should 106px. see: img.php
+                expect($img[0].naturalWidth).to.be.equal(106);
                 // Check aspect ratio is preserved
-                expect($img[0].naturalHeight).to.be.equal(150);
+                expect($img[0].naturalHeight).to.be.equal(160);
             })
     })
 
