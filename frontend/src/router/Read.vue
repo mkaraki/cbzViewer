@@ -25,7 +25,7 @@ async function loadQueuedImage(pageNo: number, imageFile: string) {
   if (typeof pageSrc.value[pageNo] !== "undefined" && pageSrc.value[pageNo] !== "/assets/loading.jpg") {
     return;
   }
-  const src = `/api/img?path=${encodeURI(data.value['path'])}&f=${encodeURI(imageFile)}`;
+  const src = `/api/img?path=${encodeURIComponent(data.value['path'])}&f=${encodeURIComponent(imageFile)}`;
 
   // Add the fetch operation to the queue
   await queue.add(async () => {
@@ -66,11 +66,11 @@ function unloadQueuedImages() {
 async function addQueuedImages() {
   if (state.value !== 2) return;
   
-  data.value['pages'].forEach(async (page) => {
-    if (typeof pageSrc.value[page['pageNo']] === "undefined") {
+  data.value['pages'].forEach((page) => {
+    if (pageSrc.value[page['pageNo']] === undefined) {
       pageSrc.value[page['pageNo']] = '/assets/loading.jpg';
     }
-    await loadQueuedImage(page['pageNo'], page['imageFile']);
+    loadQueuedImage(page['pageNo'], page['imageFile']);
   })
 }
 
@@ -91,7 +91,7 @@ onBeforeMount(() => {
         setTimeout(() => {
           let pageStr: RegExpMatchArray|null = location.hash.match(/^#(\d+)$/);
           if (pageStr !== null && typeof pageStr[1] === 'string') {
-            console.trace('Trying to set page:', pageStr[1]);
+            console.debug('Trying to set page:', pageStr[1]);
             const page = parseInt(pageStr[1]);
             setPage(page);
           } else {
