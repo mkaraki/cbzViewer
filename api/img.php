@@ -12,6 +12,11 @@ if (!isset($_GET['f'])) {
     $transaction->finish();
     die('No required parameter found: f');
 }
+if (!is_string($_GET['f'])) {
+    http_response_code(400);
+    $transaction->finish();
+    die('Parameter f must be a string');
+}
 $f = trim($_GET['f']);
 if (empty($f)) {
     http_response_code(400);
