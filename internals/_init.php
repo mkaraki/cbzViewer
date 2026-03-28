@@ -204,7 +204,7 @@ function get_comic_data(string $real_path): array|false {
     return $ret;
 }
 
-function init_sentry_tracing(string $endpoint) {
+function init_sentry_tracing(string $endpoint): \Sentry\Tracing\Transaction {
     // Setup context for the full transaction
     $transactionContext = \Sentry\Tracing\TransactionContext::make()
         ->setName($endpoint)
