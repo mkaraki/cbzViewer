@@ -1,0 +1,29 @@
+{
+	frankenphp
+	auto_https off
+}
+
+:8080 {
+	root public/
+	encode zstd br gzip
+	
+	handle {
+        php_server {
+            try_files {path} /index.php
+        }
+    }
+    handle /assets/* {
+        file_server
+    }
+    handle_path /api/* {
+        root public/api
+        php_server {
+        	try_files {path}.php
+        }
+    }
+    
+    @private_php path /internals/*
+    respond @private_php "Not Found" 404
+    @private_composer path /vendor/*
+    respond @private_composer "Not Found" 404
+}

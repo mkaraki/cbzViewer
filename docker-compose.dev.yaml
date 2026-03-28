@@ -3,7 +3,8 @@ services:
     build: .
     volumes:
       - ./books:/books:ro
-      - ./config.json:/app/config.json:ro
+      - ./api:/app/public/api:ro
+      - ./internals:/app/public/internals:ro
     ports:
       - 8080:8080
     environment:
