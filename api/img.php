@@ -38,6 +38,8 @@ if (!is_file($real_path)) {
     die('Queried directory not found');
 }
 
+process_last_modified($real_path);
+
 $extension = get_extension($real_path);
 $inner_extension = get_extension($f);
 
@@ -76,6 +78,7 @@ switch ($extension) {
 
 if (!$thumb && $image_content_type !== false) {
     header('Content-type: ' . $image_content_type);
+    header('Cache-Control: public, max-age=31536000');
     print($image_content);
     $transaction->finish();
     exit;
@@ -124,6 +127,7 @@ if ($thumb) {
 $quality = $thumb ? 20 : 80;
 
 header('Content-type: ' . $image_content_type);
+header('Cache-Control: public, max-age=31536000');
 $res = imagejpeg($image, null, $quality);
 if ($res === false) {
     http_response_code(500);

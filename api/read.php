@@ -23,6 +23,8 @@ if (!is_file($real_path)) {
     die('Queried directory not found');
 }
 
+process_last_modified($real_path);
+
 $parent_dir = get_parent_if_exists($virtual_path);
 
 if ($parent_dir === false) {

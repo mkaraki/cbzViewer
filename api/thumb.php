@@ -23,6 +23,8 @@ if (!is_file($real_path)) {
     die('Queried directory not found');
 }
 
+process_last_modified($real_path);
+
 $comic_data = get_comic_data($real_path);
 if ($comic_data === false) {
     http_response_code(500);

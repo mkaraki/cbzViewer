@@ -229,3 +229,26 @@ function search_supported_item_in_sub_dirs(string $real_path): string|false {
     
     return false;
 }
+
+function process_last_modified(string $real_path) {
+    $last_modified_time = filemtime($real_path);
+    if ($last_modified_time === false) {
+        return;
+    }
+    $last_modified_formatted = gmdate('D, d M Y H:i:s', $last_modified_time) . ' GMT';
+    header("Last-Modified: $last_modified_formatted");
+    
+    $if_modified_since = $_SERVER['HTTP_IF_MODIFIED_SINCE'] ?? null;
+    
+    if ($if_modified_since !== null) {
+        $if_modified_since_time = strtotime($if_modified_since);
+        if ($if_modified_since_time === false) {
+            return;
+        }
+        
+        if ($if_modified_since_time >= $last_modified_time) {
+            http_response_code(304);
+            exit;
+        }
+    }
+}

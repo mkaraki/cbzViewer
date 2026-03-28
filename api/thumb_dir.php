@@ -23,6 +23,8 @@ if (!is_dir($real_path)) {
     die('Queried directory not found');
 }
 
+process_last_modified($real_path);
+
 $get_first_child_item = search_supported_item_in_sub_dirs($real_path);
 if ($get_first_child_item === false) {
     http_response_code(404);
