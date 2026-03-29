@@ -26,7 +26,7 @@ async function loadQueuedImage(pageNo: number, imageFile: string) {
 
   // Add the fetch operation to the queue
   await queue.add(async () => {
-    if (typeof pageSrc.value[pageNo] !== "undefined" && pageSrc.value[pageNo] !== "/assets/loading.jpg") {
+    if (pageSrc.value[pageNo] !== undefined && pageSrc.value[pageNo] !== "/assets/loading.jpg") {
       return;
     }
     try {
