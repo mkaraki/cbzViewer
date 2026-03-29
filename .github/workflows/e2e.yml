@@ -51,7 +51,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v7
-        # add the line below to store screenshots only on failures
         if: always()
         with:
           name: cypress-screenshots
