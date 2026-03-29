@@ -275,19 +275,24 @@ const pageModeSwitch = () => {
       break;
   }
 
+  // Always recompute the currently shown page(s) after changing pageMode.
+  // Start from the current page and adjust for parity rules if necessary.
+  let newPage = getPage();
+
   switch (pageMode.value) {
     case 'double':
-      if (getPage() % 2 === 1) {
-        setPage(getPage() + 1);
+      if (newPage % 2 === 1) {
+        newPage = newPage + 1;
       }
       break;
     case 'double-except-first':
-      if (getPage() % 2 === 0 && getPage() !== 1) {
-        setPage(getPage() + 1);
+      if (newPage % 2 === 0 && newPage !== 1) {
+        newPage = newPage + 1;
       }
       break;
   }
 
+  setPage(newPage);
   localStorage.setItem('pageMode', pageMode.value);
 }
 
