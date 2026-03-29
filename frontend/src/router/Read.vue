@@ -153,7 +153,7 @@ onMounted(() => {
   }
 
   const lastPageMode = localStorage.getItem('pageMode')
-  if (lastPageMode !== null) {
+  if (lastPageMode !== null && ['single', 'double', 'double-except-first'].includes(lastPageMode)) {
     pageMode.value = lastPageMode;
   }
 });
