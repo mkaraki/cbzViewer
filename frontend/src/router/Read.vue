@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import {nextTick, onBeforeMount, onBeforeUnmount, onMounted, type Ref, ref, useTemplateRef, watch} from "vue";
+import {nextTick, onBeforeMount, onBeforeUnmount, onMounted, type Ref, ref, watch} from "vue";
 import '../style/read.css';
 import * as Sentry from "@sentry/vue";
 import PQueue from 'p-queue';
