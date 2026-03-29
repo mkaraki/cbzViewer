@@ -281,8 +281,8 @@ const pageModeSwitch = () => {
 
   switch (pageMode.value) {
     case 'double':
-      if (newPage % 2 === 1) {
-        newPage = newPage + 1;
+      if (newPage % 2 === 0) {
+        newPage = newPage - 1;
       }
       break;
     case 'double-except-first':
