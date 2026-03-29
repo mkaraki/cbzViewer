@@ -36,12 +36,13 @@ jobs:
         run: docker compose -f docker-compose.dev.yaml up --wait --build
 
       - name: bun install
-        run: bun install
+        run: bun install --frozen-lockfile
         working-directory: frontend
 
       - name: Cypress run
         uses: cypress-io/github-action@v7
         with:
+          install: false
           package-manager-cache: false
           working-directory: frontend
           wait-on: 'http://localhost:8080'
