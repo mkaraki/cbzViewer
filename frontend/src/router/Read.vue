@@ -22,13 +22,13 @@ let thumbnailBatch = new AbortController();
 const pageSrc: Ref<any> = ref([]);
 
 async function loadQueuedImage(pageNo: number, imageFile: string) {
-  if (typeof pageSrc.value[pageNo] !== "undefined" && pageSrc.value[pageNo] !== "/assets/loading.jpg") {
-    return;
-  }
   const src = `/api/img?path=${encodeURIComponent(data.value['path'])}&f=${encodeURIComponent(imageFile)}`;
 
   // Add the fetch operation to the queue
   await queue.add(async () => {
+    if (typeof pageSrc.value[pageNo] !== "undefined" && pageSrc.value[pageNo] !== "/assets/loading.jpg") {
+      return;
+    }
     try {
       // The queue ensures only limited number of these fetches are ever running at once
       const traceData = Sentry.getTraceData();
