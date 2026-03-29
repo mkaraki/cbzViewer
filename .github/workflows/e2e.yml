@@ -40,5 +40,24 @@ jobs:
         working-directory: frontend
 
       - name: Cypress run
-        run: bun cypress run
-        working-directory: frontend
+        uses: cypress-io/github-action@v7
+        with:
+          package-manager-cache: false
+          working-directory: frontend
+          wait-on: 'http://localhost:8080'
+        env:
+          COMMIT_INFO_BRANCH: ${{ github.ref_name }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/upload-artifact@v7
+        # add the line below to store screenshots only on failures
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: frontend/cypress/screenshots
+          if-no-files-found: ignore # 'warn' or 'error' are also available, defaults to `warn`
+      - uses: actions/upload-artifact@v7
+        with:
+          name: cypress-videos
+          path: frontend/cypress/videos
+          if-no-files-found: ignore # 'warn' or 'error' are also available, defaults to `warn`
