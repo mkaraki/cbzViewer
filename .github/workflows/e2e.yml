@@ -15,17 +15,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
-      - uses: oven-sh/setup-bun@v2
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
         with:
           bun-version: latest
 
       - name: Set up Docker
-        uses: docker/setup-docker-action@v5
+        uses: docker/setup-docker-action@1a6edb0ba9ac496f6850236981f15d8f9a82254d # v5
         with:
           version: latest
 
       - name: Set up Docker Compose
-        uses: docker/setup-compose-action@v2
+        uses: docker/setup-compose-action@8cccb8c14b6500aaffebff1aa49c502c34d2e5e6 # v2
         with:
           version: latest
 
@@ -40,7 +40,7 @@ jobs:
         working-directory: frontend
 
       - name: Cypress run
-        uses: cypress-io/github-action@v7
+        uses: cypress-io/github-action@4c06c48f3ffea349b7189aa06dfcda47a9fa7b92 # v7
         with:
           install: false
           package-manager-cache: false
