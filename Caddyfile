@@ -1,5 +1,7 @@
 {
-	frankenphp
+	frankenphp {
+		php_ini memory_limit 512M
+	}
 	auto_https off
 }
 
