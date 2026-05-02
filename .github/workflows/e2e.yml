@@ -20,7 +20,7 @@ jobs:
           bun-version: latest
 
       - name: Set up Docker
-        uses: docker/setup-docker-action@1a6edb0ba9ac496f6850236981f15d8f9a82254d # v5
+        uses: docker/setup-docker-action@b2189fbf2a6592b51fee7cdd93ee2bfaeba733db # v5
         with:
           version: latest
 
@@ -40,7 +40,7 @@ jobs:
         working-directory: frontend
 
       - name: Cypress run
-        uses: cypress-io/github-action@783cb3f07983868532cabaedaa1e6c00ff4786a8 # v7
+        uses: cypress-io/github-action@c495c3ddffba403ba11be95fffb67e25203b3799 # v7
         with:
           install: false
           package-manager-cache: false
