@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Set up BuildKit Docker container builder to be able to build
       # multi-platform images and export cache
@@ -76,7 +76,7 @@ jobs:
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
         id: build-and-push
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           context: .
           sbom: ${{ github.event_name != 'pull_request' }}
@@ -96,7 +96,7 @@ jobs:
       - name: Docker Scout (PR)
         id: docker-scout
         if: ${{ github.event_name == 'pull_request' }}
-        uses: docker/scout-action@cd72f264beff1cd72735de31148b9d3244a0234a # v1.21.0
+        uses: docker/scout-action@7520205ff60037fdc436b40b6a1d1e55a839ec2d # v1.22.0
         with:
           command: compare,cves,recommendations,environment
           image: local://${{ fromJSON(steps.meta.outputs.json).tags[0] }}
@@ -111,7 +111,7 @@ jobs:
       - name: Analyze for critical and high CVEs
         id: docker-scout-cves
         if: ${{ github.event_name != 'pull_request_target' }}
-        uses: docker/scout-action@cd72f264beff1cd72735de31148b9d3244a0234a # v1.21.0
+        uses: docker/scout-action@7520205ff60037fdc436b40b6a1d1e55a839ec2d # v1.22.0
         with:
           command: cves,environment
           image: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
